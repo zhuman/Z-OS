@@ -1,0 +1,74 @@
+[OPTIONS]
+Compatibility=1.1 or later
+Compiled file=Z-OS.chm
+Contents file=Table of Contents.hhc
+Default Window=Main Windows
+Default topic=index.html
+Display compile progress=Yes
+Enhanced decompilation=Yes
+Full-text search=Yes
+Language=0x409 English (United States)
+Title=Z-OS Documentation
+
+[WINDOWS]
+Main Windows="Z-OS Documentation","Table of Contents.hhc",,"index.html",,,,,,0x23520,,0x3006,,0x1000000,,,,,,0
+
+
+[FILES]
+index.html
+semaphore\index.html
+objectman\igeneric.html
+objectman\index.html
+semaphore\getmax.html
+images.html
+errorcodes.html
+event\index.html
+threadman\index.html
+objectman\createobject.html
+objectman\getinterface.html
+objectman\internalobject.html
+objectman\releaseobject.html
+semaphore\setmax.html
+objectman\waitforobject.html
+objectman\waitforobjects.html
+queue\additem.html
+queue\getitem.html
+queue\index.html
+queue\peek.html
+objectman\iwaitable.html
+objectman\startwait.html
+concepts.html
+threadman\entercriticalsection.html
+threadman\exitcriticalsection.html
+objectman\finishwait.html
+event\set.html
+event\isset.html
+event\pulse.html
+event\reset.html
+semaphore\iscaptured.html
+semaphore\queuecapture.html
+semaphore\releasecapture.html
+thread\start.html
+thread\index.html
+lists\index.html
+delegate\index.html
+timer\getinterval.html
+timer\index.html
+timer\isrunning.html
+timer\reset.html
+timer\setinterval.html
+timer\start.html
+timer\stop.html
+lists\addlistitem.html
+lists\clearlist.html
+lists\compareitemsproc.html
+lists\getindexof.html
+lists\getlistitem.html
+lists\insertlistitem.html
+lists\removelistitem.html
+lists\replacelistitem.html
+lists\sortlist.html
+lists\swaplistitems.html
+
+[INFOTYPES]
+

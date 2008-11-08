@@ -1,0 +1,40 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>The Object Manager</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->The Object Manager<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>Z-OS's entire API minus the Object Manager itself is accessible through a system of objects and interfaces. If this is a new concept, you should read over the <a href="../concepts.html">Basic Concepts</a> of Z-OS. Each object can implement any number of interfaces, and the interfaces allow one to actually interact with the object.</p>
+  <p>In order to create and release objects, and receive interfaces for them, the object manager provides a small static API. It contains the following methods:</p>
+  <ul>
+    <li><a href="createobject.html">CreateObject</a></li>
+    <li><a href="getinterface.html">GetInterface</a></li>
+    <li><a href="releaseobject.html">ReleaseObject</a></li>
+    <li><a href="waitforobject.html">WaitForObject</a></li>
+    <li><a href="waitforobjects.html">WaitForObjects</a></li>
+    <li><a href="finishwait.html">FinishWait</a></li>
+    <li><a href="ishandlevalid.html">IsHandleValid</a></li>
+    <li>RegisterTypeManager</li>
+    <li>CreateSymbolicLink</li>
+    <li>ChangeSymbolicLink</li>
+    <li>InternalObjectFromName</li>
+    <li>InternalObjectFromHandle</li>
+    <li>InternalObjectFromData</li>
+  </ul>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

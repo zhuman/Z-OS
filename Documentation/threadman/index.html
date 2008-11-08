@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>The Thread Manager</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->The Thread Manager<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>The thread manager is Z-OS's second most important subsystem, after the Object Manager. It manages all user and system threads and ensures that threads of equal priority receive equal processing time. It also interacts with synchronization primitives and other objects that implement the <a href="../objectman/iwaitable.html">IWaitable</a> interface to allow threads to wait for objects. Because of this interaction, the wait methods have been placed under the thread manager heading as well as under the object manager heading.</p>
+  <p>The thread manager also provides a few static methods for low-level synchronizations, interrupts, and timing. They are:</p>
+  <ul>
+    <li><a href="entercriticalsection.html">EnterCriticalSection</a></li>
+    <li><a href="exitcriticalsection.html">ExitCriticalSection</a></li>
+    <li>GetSystemTime</li>
+    <li><a href="../objectman/waitforobject.html">WaitForObject</a></li>
+    <li><a href="../objectman/waitforobjects.html">WaitForObjects</a></li>
+    <li><a href="../objectman/finishwait.html">FinishWait</a></li>
+  </ul>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

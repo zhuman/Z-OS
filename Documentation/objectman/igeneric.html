@@ -1,0 +1,30 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>The IGeneric Interface</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->The IGeneric Interface<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>The IGeneric interface is mostly only a concern of those wishing to create their own objects, but it also is a good idea to understand how the object manager initializes and destroys objects. When CreateObject is called, the object manager first sets up its internal representation of the object. After this is done, it calls GetInterface in much the same way that user code would. The interface it asks for is IGeneric. If this interface is unimplemented by the object, it simply returns the new handle. If it is implemented, it calls the Create method of the interface, passing a pointer to its internal representation of the object, an <a href="internalobject.html">InternalObject</a> structure.</p>
+  <p>When an object is no longer in use by the system, the object manager will call the Destroy method of this interface before finalizing its destruction. This method should deallocate any memory that was allocated and remove any references to the object from the type manager's private structures.</p>
+  <h4>IGeneric Methods</h4>
+  <ul>
+    <li>Create</li>
+    <li>Destroy</li>
+  </ul>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

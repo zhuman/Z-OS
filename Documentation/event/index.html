@@ -1,0 +1,37 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>Events</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->Events<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>Events provide a simple method of synchronization between threads. An event can be in one of two states, &quot;set&quot; and off. Waiting threads are released whenever the event is in the &quot;set&quot; state. Events can be created with <a href="../objectman/createobject.html">CreateObject</a>, passing TypeEvent as the type code.</p>
+  <h4>Implemented Interfaces</h4>
+  <ul>
+    <li><a href="../objectman/igeneric.html">IGeneric</a></li>
+    <li><a href="../objectman/iwaitable.html">IWaitable</a></li>
+    <li>IEvent (see below)</li>
+  </ul>
+  <h4>IEvent Methods</h4>
+  <ul>
+    <li><a href="set.html">Set</a></li>
+    <li><a href="pulse.html">Pulse</a></li>
+    <li><a href="reset.html">Reset</a></li>
+    <li><a href="isset.html">IsSet</a></li>
+  </ul>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

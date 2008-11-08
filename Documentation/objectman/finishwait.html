@@ -1,0 +1,33 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>FinishWait</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->FinishWait<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <h4>Definition</h4>
+  <pre>Int16 FinishWait(void* data, ThreadInternal* specThread);</pre>
+  <h4>Description</h4>
+  <p>This function is called by type managers once an object releases one or all of the threads waiting upon it. User code should never call this.</p>
+  <h4>Arguments</h4>
+  <p><em>data</em></p>
+  <p>The data field of the object that is being waited upon. This is used to identify the object.</p>
+  <p>specThread</p>
+  <p>A pointer to the ThreadInternal structure for a thread that is currently waiting on the object. If this is null, all threads that are waiting for the specified object will be released from their waiting state. If this is not null, only this specific thread will be released. This is used, for example, to only allow a set number of threads  access to a semaphore at one time.</p>
+  <h4>Return</h4>
+  <p><a href="../errorcodes.html">Error Code</a></p>
+  <!-- InstanceEndEditable --></div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

@@ -1,0 +1,35 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>Basic Concepts</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->Basic Concepts<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>Developing for Z-OS is not unlike developing for the PC, but it retains many of the attributes of embedded development. It is, of course, a real-time operating system, and so gives much more control over the operation of the system than a classic PC monolithic operating system. There are some basic concepts that anyone wishing to develop for Z-OS must first grasp before preceding. Those with prior experience in object-oriented programming should feel at-home with the design of the system, but the concepts are easily understandable enough for anyone.</p>
+  <h3>Objects and Interfaces</h3>
+  <p>Every major API in Z-OS is accessed through the <a href="objectman/index.html">Object Manager</a>. The object manager is responsible for creating, maintaining, tracking, and destroying objects. Each object can implement any number of interfaces. An interface is simply a collection of functions that can be used on a given object. The actual implementation of the function doesn't matter because it is never seen. Any object can implement any interfaces, making this a very elegant way of interacting with the system. For example, IO devices can all implement an interface dealing with reading and writing because they all share the same functionality in that aspect. However, one IO device might able to talk to many others. Therefore, it can also implement an interface that provides functions for connecting to individual clients.</p>
+  <p>Another interesting and important aspect of this API is that there are no static functions that deal solely with one type of object. All objects are created with the same function, &quot;CreateObject,&quot; which is implemented by the object manager. Unlike other platforms, there are not individual functions for creating each specific type of object. &quot;CreateObject&quot; is simply told what type of object to create and it handles the object creation for itself. As a general rule, objects are created with a default set of properties suiting the most people and will implement Get/Set methods in an interface to configure them later. In this way, a constructor is never needed.</p>
+  <p>See the section on the <a href="objectman/index.html">Object Manager</a> for more information.</p>
+  <h3>Multithreading</h3>
+  <p>Z-OS's <a href="threadman/index.html">Thread Manager</a> provides the system's multitasking capability. As soon as the system initializes its basic object types, the thread manager takes over. After it runs through its own initialization sequence, it immediately passes control to the user-defined thread &quot;StartupThread.&quot; In this thread, users can spawn off new threads or simply begin executing their program.</p>
+  <p>Each thread in the system has a set of properties managed by the thread manager. The thread manager provides access to these properties and allows fine control over each thread through Thread Objects. Each thread object implements the IThread interface, which contains methods dealing with starting, stopping, suspending, and reprioritizing threads.</p>
+  <p>All user code in Z-OS is run in threads. New threads can be created by creating new thread objects with the object manager. Then, the thread is started using its IThread.Start method. A function pointer is passed to this method and it is this method that the new thread starts eecuting at. If this function ever returns, the thread manager simply stops execution of the thread and dequeues it.</p>
+  <p>Threads have priority levels and all threads of the same priority level receive equal amounts of processing time. This is accomplished by preempting each thread after a short period of time and switching to the next waiting thread. Often times, threads do not need to be always running. For example, a thread might simply be waiting for a timer to expire. If this is the case, a thread can set itself into a &quot;wait&quot; mode and will not resume execution until whatever it's waiting for has finished.</p>
+  <p>&quot;Thread safety&quot; is a concept that is integral to developing in a multithreading environment. It is important that two threads do not try to access the same data at the same time. Doing so can cause unpredictable results. Therefore, Z-OS provides synchronization primitives to user code in the form of <a href="semaphore/index.html">Semaphores</a>, <a href="event/index.html">Events</a>, <a href="timer/index.html">Timers</a>, and <a href="queue/index.html">Queues</a>. Using these objects, it is possible to write thread-safe code.</p>
+  <p>For more information on threading, see the <a href="threadman/index.html">Thread Manager</a> section.</p>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

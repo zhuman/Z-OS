@@ -1,0 +1,38 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>Delegates</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->Delegates<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>Delegates are an object-level representation of function pointers. A delegate internally stores a listing of function pointers called &quot;handlers.&quot; Handlers can be added or removed by any thread, since delegates are thread-safe. When a delegate is invoked, all of its handlers are called. This allows for event-based programming. Delegates can be created by passing TypeDelegate as the type code to <a href="../objectman/createobject.html">CreateObject</a>.</p>
+  <p>Delegates also provide access to the system's worker thread pool. The worker thread pool is a group of special system-managed threads that run work items when requested. This allows functions t be called asynchronously without having to create new threads. The work load is automatically balanced amongst the various worker threads.</p>
+  <h4>Implemented Interfaces</h4>
+  <ul>
+    <li><a href="../objectman/igeneric.html">IGeneric</a></li>
+    <li><a href="../objectman/iwaitable.html">IWaitable</a></li>
+    <li>IDelegate (see below)</li>
+  </ul>
+  <h4>IDelegate Methods</h4>
+  <ul>
+    <li>Invoke</li>
+    <li>InvokeAsync</li>
+    <li>AddHandler</li>
+    <li>RemoveHandler</li>
+  </ul>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

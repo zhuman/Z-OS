@@ -1,0 +1,36 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<!-- InstanceBeginEditable name="doctitle" -->
+<title>Queues</title>
+<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" -->
+<!-- InstanceEndEditable -->
+</head>
+
+<body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->Queues<!-- InstanceEndEditable -->
+</div>
+<div id="content" style="padding:10px;margin:10px">
+  <!-- InstanceBeginEditable name="ContentRegion" -->
+  <p>Queues provide a means of message/data passing between threads in a FIFO (First In First Out) manner. Queues are only thread-safe with one thread receiving the data. If more than one receiver tries to read data off of the queue, the results could be highly unpredictable. Therefore, if more than one receiving thread is wanted, users should wrap the queue accesses in a semaphore/mutex.</p>
+  <h4>Interfaces Implemented</h4>
+  <ul>
+    <li><a href="../objectman/igeneric.html">IGeneric</a></li>
+    <li><a href="../objectman/iwaitable.html">IWaitable</a></li>
+    <li>IQueue (see below)</li>
+  </ul>
+  <h4>IQueue Methods</h4>
+  <ul>
+    <li><a href="additem.html">AddItem</a></li>
+    <li><a href="peek.html">Peek</a></li>
+    <li><a href="getitem.html">GetItem</a></li>
+  </ul>
+  <!-- InstanceEndEditable -->
+</div>
+<div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
+Copyright &copy; 2008 Zachary Northrup
+</div>
+</body>
+<!-- InstanceEnd --></html>

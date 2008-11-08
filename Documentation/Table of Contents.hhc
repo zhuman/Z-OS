@@ -1,0 +1,270 @@
+<!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
+<HTML>
+<HEAD>
+<meta name="GENERATOR" content="Microsoft&reg; HTML Help Workshop 4.1">
+<!-- Sitemap 1.0 -->
+</HEAD><BODY>
+<OBJECT type="text/site properties">
+	<param name="Window Styles" value="0x800025">
+</OBJECT>
+<UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="About Z-OS">
+		<param name="Local" value="index.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Basic Concepts">
+		<param name="Local" value="concepts.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Error Codes">
+		<param name="Local" value="errorcodes.html">
+		</OBJECT>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="The Object Manager">
+		<param name="Local" value="objectman\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IGeneric">
+			<param name="Local" value="objectman\igeneric.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IWaitable">
+			<param name="Local" value="objectman\iwaitable.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IWaitable.StartWait">
+			<param name="Local" value="objectman\startwait.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="CreateObject">
+			<param name="Local" value="objectman\createobject.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="GetInterface">
+			<param name="Local" value="objectman\getinterface.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ReleaseObject">
+			<param name="Local" value="objectman\releaseobject.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WaitForObjects">
+			<param name="Local" value="objectman\waitforobjects.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WaitForObject">
+			<param name="Local" value="objectman\waitforobject.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="FinishWait">
+			<param name="Local" value="threadman\exitcriticalsection.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Thread Manager">
+		<param name="Local" value="threadman\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IWaitable">
+			<param name="Local" value="objectman\iwaitable.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IWaitable.StartWait">
+			<param name="Local" value="objectman\startwait.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WaitForObject">
+			<param name="Local" value="objectman\waitforobject.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="WaitForObjects">
+			<param name="Local" value="objectman\waitforobjects.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="EnterCriticalSection">
+			<param name="Local" value="threadman\entercriticalsection.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ExitCriticalSection">
+			<param name="Local" value="threadman\exitcriticalsection.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="GetSystemTime">
+			<param name="Local" value="threadman\index.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Events">
+		<param name="Local" value="event\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IEvent.Set">
+			<param name="Local" value="event\set.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IEvent.Pulse">
+			<param name="Local" value="event\pulse.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IEvent.Reset">
+			<param name="Local" value="event\reset.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IEvent.IsSet">
+			<param name="Local" value="event\isset.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Queues">
+		<param name="Local" value="queue\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IQueue.AddItem">
+			<param name="Local" value="queue\additem.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IQueue.Peek">
+			<param name="Local" value="queue\peek.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IQueue.GetItem">
+			<param name="Local" value="queue\getitem.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Semaphores">
+		<param name="Local" value="semaphore\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ISemaphore.GetMax">
+			<param name="Local" value="semaphore\getmax.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ISemaphore.SetMax">
+			<param name="Local" value="semaphore\setmax.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ISemaphore.QueueCapture">
+			<param name="Local" value="semaphore\queuecapture.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ISemaphore.IsCaptured">
+			<param name="Local" value="semaphore\iscaptured.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ISemaphore.ReleaseCapture">
+			<param name="Local" value="semaphore\releasecapture.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Threads">
+		<param name="Local" value="thread\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IThread.Start">
+			<param name="Local" value="thread\start.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Timers">
+		<param name="Local" value="timer\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ITimer.SetInterval">
+			<param name="Local" value="timer\setinterval.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ITimer.GetInterval">
+			<param name="Local" value="timer\getinterval.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ITimer.Start">
+			<param name="Local" value="timer\start.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ITimer.Stop">
+			<param name="Local" value="timer\stop.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ITimer.Reset">
+			<param name="Local" value="timer\reset.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ITimer.IsRunning">
+			<param name="Local" value="timer\isrunning.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Delegates">
+		<param name="Local" value="delegate\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IDelegate.Invoke">
+			<param name="Local" value="delegate\index.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IDelegate.InvokeAsync">
+			<param name="Local" value="delegate\index.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IDelegate.AddHandler">
+			<param name="Local" value="delegate\index.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IDelegate.RemoveHandler">
+			<param name="Local" value="delegate\index.html">
+			</OBJECT>
+	</UL>
+	<LI> <OBJECT type="text/sitemap">
+		<param name="Name" value="Lists">
+		<param name="Local" value="lists\index.html">
+		</OBJECT>
+	<UL>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="GetListItem">
+			<param name="Local" value="lists\getlistitem.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="AddListItem">
+			<param name="Local" value="lists\addlistitem.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="GetIndexOf">
+			<param name="Local" value="lists\getindexof.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="CompareItemsProc">
+			<param name="Local" value="lists\compareitemsproc.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ClearList">
+			<param name="Local" value="lists\clearlist.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="ReplaceListItem">
+			<param name="Local" value="lists\replacelistitem.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="RemoveListItem">
+			<param name="Local" value="lists\removelistitem.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="SortList">
+			<param name="Local" value="lists\sortlist.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="InsertListItem">
+			<param name="Local" value="lists\insertlistitem.html">
+			</OBJECT>
+	</UL>
+</UL>
+</BODY></HTML>
