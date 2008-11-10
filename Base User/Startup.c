@@ -29,7 +29,7 @@ void Phase0Init(void)
 void Phase1Init(void)
 {
 	// Create the system worker threads and register the Delegate type.
-	InitializeDelegates();
+	//InitializeDelegates();
 }
 
 void TestSDMount(void)

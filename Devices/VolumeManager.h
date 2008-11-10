@@ -13,7 +13,7 @@ typedef struct
 
 typedef struct
 {
-	__attribute__ ((packed)) UInt8					ConsChkRtn[446];
+	__attribute__ ((packed)) UInt8					ConsChkRtn[512 - 2 - 4 * sizeof(PartitionTableEntry)];
 	__attribute__ ((packed)) PartitionTableEntry	Partition0;
 	__attribute__ ((packed)) PartitionTableEntry	Partition1;
 	__attribute__ ((packed)) PartitionTableEntry	Partition2;
