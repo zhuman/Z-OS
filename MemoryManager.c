@@ -70,11 +70,15 @@ void* malloc(size_t size)
 	EnterCriticalSection();
 	for(;;)
 	{
+		if ((block && ((UInt16)block - (UInt16)Heap)) >= (HeapSize * sizeof(UInt16)))
+		{
+			for(;;);
+		}
+		
 		// If we are at a free spot
 		if (!(block[0]) || (!(block[1]) && ((block[0] - (UInt16)block) > ((UInt16)size + sizeof(UInt16) * 2))))
 		{
 			UInt16* oldBlock = (UInt16*)block[0];
-			//UInt16 i;
 			
 			// If there is no more room for this block, return null
 			if (((UInt16)block - (UInt16)Heap + sizeof(UInt16) * 2 + (UInt16)size) > (HeapSize * sizeof(UInt16)))
@@ -96,15 +100,21 @@ void* malloc(size_t size)
 			TotalMemUsage += (UInt16)size;
 			
 			// Zero the block
-			block += sizeof(UInt16) * 2;
+			block = (UInt16*)((UInt16)block + sizeof(UInt16) * 2);
 			memset(block,0,size);
 			ExitCriticalSection();
+			if ((UInt16)block > ((UInt16)Heap + HeapSize * sizeof(UInt16)))
+			{
+				puts("Oh no!");
+				//Console::WriteLine(L"Oh no!");
+			}
 			return (void*)block;
 		}
 		
 		lastBlock = block;
 		block = (UInt16*)(block[0]);
 	}
+	
 }
 
 // Deallocates using an alternate heap algorithm
