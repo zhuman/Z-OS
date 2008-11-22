@@ -23,7 +23,7 @@ int BootOS(void)
 	// Pre-driver startup sequence
 	OpenUART1(0x8000, 0x400, 20);
 	//OpenUART2(0x8000, 0x400, 20);
-	printf("Welcome to Z-OS\r\nBooting...\r\n");
+	puts("Welcome to Z-OS\r\nBooting...\r\n");
 	printf("System boots: %d\r\n",BootNum++);
 	
 	Phase0Init();
@@ -48,6 +48,8 @@ void __attribute__((__weak__)) Phase0Init(void)
 	InitializeIO();
 	
 	InitSerialPorts();
+	InitVirtualFileDevice();
+	// Initialize other device drivers here
 }
 
 // Called after the thread manager has been initialized, but 

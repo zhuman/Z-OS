@@ -59,4 +59,5 @@ __inline static int Sgn(int x)
 #include "Delegate.h"
 #include "IO.h"
 #include "Devices\File.h"
+#include "Devices\VirtualFile.h"
 #include "CacheManager.h"

@@ -1,6 +1,6 @@
 #include "..\Z-OS.h"
-
-int __attribute__((__weak__, __section__(".libc"))) open(const char* name, int access, int mode)
+/*
+int open(const char* name, int access, int mode)
 {
 	// Open the file with the Object Manager
 	UInt16 handle;
@@ -14,13 +14,13 @@ int __attribute__((__weak__, __section__(".libc"))) open(const char* name, int a
 	return *(int*)(&handle); // Convert it to an int without actual conversion
 }
 
-int __attribute__((__weak__, __section__(".libc"))) close(int handle)
+int close(int handle)
 {
 	ReleaseObject(*(UInt16*)(&handle));
 	return 0;
 }
 
-int __attribute__((__weak__, __section__(".libc"))) write(int handle, void* buffer, unsigned int len)
+int write(int handle, void* buffer, unsigned int len)
 {
 	UInt16 realHandle = *(UInt16*)(&handle);
 	Int16 ret;
@@ -30,7 +30,8 @@ int __attribute__((__weak__, __section__(".libc"))) write(int handle, void* buff
 	return 0;
 }
 
-int __attribute__((__weak__, __section__(".libc"))) read(int handle, void *buffer, unsigned int len)
+int read(int handle, void *buffer, unsigned int len)
 {
 	return 0;
 }
+*/

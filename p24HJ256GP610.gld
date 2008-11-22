@@ -10,7 +10,7 @@ EXTERN(__resetALT)
 INPUT (-lp24HJ256GP610-coff)
 
 /* Heap size (if any) */
-HEAPSIZE = 0;
+HEAPSIZE = 2000;
 
 /* Change the following line to __ICD_DEBUG = 1; when debugging with the ICD. 
    Also be sure to change the location of the reset vector below. */

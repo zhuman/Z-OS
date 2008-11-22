@@ -1,7 +1,7 @@
 #include "..\Z-OS.h"
-#include "..\..\SDCard\Public.h"
-#include "..\..\NewFAT\Public.h"
-#include "..\..\FileDevice\Public.h"
+#include "..\..\SDDriver\Public.h"
+#include "..\..\FATDriver\Public.h"
+//#include "..\..\FileDevice\Public.h"
 
 // This must be here in order to boot Z-OS
 int main(void){return BootOS();}
@@ -21,7 +21,7 @@ void Phase0Init(void)
 	// Initialize other device drivers here
 	InitSD();
 	InitFAT();
-	InitFileDevice();
+	InitVirtualFileDevice();
 }
 
 // Called after the thread manager has been initialized, but 

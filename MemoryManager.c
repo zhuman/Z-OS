@@ -5,7 +5,7 @@
 Int16 TotalMemAllocs = 0;
 Int64 TotalMemUsage = 0;
 
-#define HeapSize 6500
+#define HeapSize 5000
 
 __attribute__ ((__far__)) UInt16 Heap[HeapSize] = {0};
 
