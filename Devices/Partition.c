@@ -250,6 +250,4 @@ void InitPartitions(void)
 	part.Type = TypePartition = GetUniqueTypeCode();
 	part.GetInterface = PartGetInterface;
 	RegisterTypeManager(part);
-	
-	puts("Initialized InitPartitions...\r\n");
 }

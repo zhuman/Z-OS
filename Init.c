@@ -21,10 +21,14 @@ int BootOS(void)
 	IEC1bits.INT1IE = 1;     // interrupt enabled
 	
 	// Pre-driver startup sequence
+	//HeapInit();
+	
 	OpenUART1(0x8000, 0x400, 20);
 	//OpenUART2(0x8000, 0x400, 20);
 	puts("Welcome to Z-OS\r\nBooting...\r\n");
 	printf("System boots: %d\r\n",BootNum++);
+	
+	//for(;;);
 	
 	Phase0Init();
 	
@@ -48,7 +52,7 @@ void __attribute__((__weak__)) Phase0Init(void)
 	InitializeIO();
 	
 	InitSerialPorts();
-	InitVirtualFileDevice();
+	//InitVirtualFileDevice();
 	// Initialize other device drivers here
 }
 

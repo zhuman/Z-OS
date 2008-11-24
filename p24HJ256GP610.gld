@@ -14,7 +14,7 @@ HEAPSIZE = 2000;
 
 /* Change the following line to __ICD_DEBUG = 1; when debugging with the ICD. 
    Also be sure to change the location of the reset vector below. */
-__ICD_DEBUG = 1;
+__ICD_DEBUG = 0;
 
 /*
 ** Memory Regions
@@ -22,9 +22,9 @@ __ICD_DEBUG = 1;
 MEMORY
 {
 /***** ICD part *****/
-  reset        : ORIGIN = 0x0,      LENGTH = 0x4 
+/*  reset        : ORIGIN = 0x0,      LENGTH = 0x4 */
 /* Bootloader part */
-/*  reset        : ORIGIN = 0xc02,    LENGTH = 0x4 */
+  reset        : ORIGIN = 0xc02,    LENGTH = 0x4
 /********************/
   
   data  (a!xr) : ORIGIN = 0x800,	LENGTH = 0xA000

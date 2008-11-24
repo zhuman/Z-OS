@@ -61,12 +61,6 @@ typedef struct
 	Bool IsMounted;
 	struct t_FileSystemInternal* MountedFS; // The file system used to mount it
 	UInt64 Position; // The current seek position
-	
-	// For use by FS drivers
-	void* Data1;
-	void* Data2;
-	void* Data3;
-	void* Data4;
 } DeviceInternal;
 
 // IO Manager API

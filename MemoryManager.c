@@ -5,9 +5,13 @@
 Int16 TotalMemAllocs = 0;
 Int64 TotalMemUsage = 0;
 
+#define Word UInt16
+#define WordSize sizeof(Word)
+
 #define HeapSize 5000
 
-__attribute__ ((__far__)) UInt16 Heap[HeapSize] = {0};
+__attribute__ ((__far__)) Word Heap[HeapSize] = {0};
+size_t FreeWords = HeapSize;
 
 //#undef malloc
 //#undef free
@@ -49,99 +53,146 @@ void zfree2(void* pointer)
 // Initializes an alternate heap algorithm
 void HeapInit(void)
 {
-	// Currently unneeded
+	memset(Heap,0,HeapSize * sizeof(UInt16));
 }
 
 // Allocates using an alternate heap algorithm
 void* malloc(size_t size)
 {
-	UInt16* block = (UInt16*)Heap;
-	UInt16* lastBlock = block;
+	Word *block = Heap;
+	size_t wsize;
+	Word backref = -1;
+	Word forwardref = 0;
 	
-	// Make the size even
-	if (size & 1) size++;
+	// block represents a list node
+	// block[0] is an offset to the previous node
+	// block[1] is an offset to the next node
 	
-	// Check to see if the memory is available
-	if ((size + sizeof(UInt16) * 2) > ((HeapSize * sizeof(UInt16)) - TotalMemUsage))
+	// Check for zero size
+	if(!size)
+		return NULL;
+	
+	// Align size to a word boundary
+	if(size & (WordSize - 1))
+		size = (size | (WordSize - 1)) + 1;
+	
+	wsize = size / WordSize + 2;
+	
+	EnterCriticalSection();
+	
+	// Quick free space check
+	if(wsize > FreeWords)
 	{
+		ExitCriticalSection();
 		return NULL;
 	}
 	
-	EnterCriticalSection();
-	for(;;)
+	// Iterate through the list
+	do
 	{
-		if ((block && ((UInt16)block - (UInt16)Heap)) >= (HeapSize * sizeof(UInt16)))
-		{
-			for(;;);
-		}
+		// Move to the next block
+		block += forwardref;
 		
-		// If we are at a free spot
-		if (!(block[0]) || (!(block[1]) && ((block[0] - (UInt16)block) > ((UInt16)size + sizeof(UInt16) * 2))))
+		// Back references are only needed to recombine blocks during freeing. So, free regions don't need
+		// a back reference. Therefore, a block will be marked as free if its back reference is null.
+		if(!block[0])
 		{
-			UInt16* oldBlock = (UInt16*)block[0];
+			// If this is the last block, the forward reference will be null, and the block's size is just the remaining heap
+			// length. Otherwise, the size of this block is the value of the forward reference.
+			size_t bsize = block[1] ? block[1] : HeapSize - (block - Heap);
 			
-			// If there is no more room for this block, return null
-			if (((UInt16)block - (UInt16)Heap + sizeof(UInt16) * 2 + (UInt16)size) > (HeapSize * sizeof(UInt16)))
+			// Is free region large enough?
+			if(bsize >= wsize)
 			{
+				// Allocate the block by setting the back and forward references to their new values
+				block[0] = backref;
+				
+				// Since a valid block must be at least 3 words long, if the size of the free fragment left after this allocation
+				// would be less than 3, just allocate the remainder of the block to avoid unallocatable free fragments.
+				if(bsize - wsize >= 3)
+				{
+					Word *freefragment = block + wsize;
+					// Insert node for the remainder of the free space
+					freefragment[0] = 0;
+					if(block[1])
+						// Not the last block, inserted free fragment must have a forward reference and the proceeding block must
+						// be updated to point back to the new free fragment as well.
+						freefragment[1] = *(block + bsize) = bsize - wsize;
+					else
+						freefragment[1] = 0;
+					
+					block[1] = wsize;
+					
+					// Update free word count
+					FreeWords -= wsize;
+				}
+				// Else, the forward reference stays the same
+				else
+					FreeWords -= bsize;
+				
+				// Zero the actual memory (depending on this in an allocator is bad practice, however)
+				memset(&block[2], 0, (wsize - 2) * WordSize);
+				
 				ExitCriticalSection();
-				return NULL;
+				return &block[2];
 			}
-			
-			block[1] = (UInt16)lastBlock;
-			
-			if (!block[0] || (block[0] - (UInt16)block > (UInt16)size + sizeof(UInt16) * 2))
-			{
-				block[0] = (UInt16)block + sizeof(UInt16) * 2 + (UInt16)size;
-				((UInt16*)(block[0]))[0] = (UInt16)oldBlock;
-				((UInt16*)(block[0]))[1] = 0;
-			}
-			
-			TotalMemAllocs++;
-			TotalMemUsage += (UInt16)size;
-			
-			// Zero the block
-			block = (UInt16*)((UInt16)block + sizeof(UInt16) * 2);
-			memset(block,0,size);
-			ExitCriticalSection();
-			if ((UInt16)block > ((UInt16)Heap + HeapSize * sizeof(UInt16)))
-			{
-				puts("Oh no!");
-				//Console::WriteLine(L"Oh no!");
-			}
-			return (void*)block;
 		}
 		
-		lastBlock = block;
-		block = (UInt16*)(block[0]);
-	}
+		// Prepare to move to the next block in the next loop iteration
+		backref = forwardref = block[1];
+		
+	} while(forwardref);
 	
+	// No contiguous regions of free space were large enough to contain the allocation
+	ExitCriticalSection();
+	return NULL;
 }
 
 // Deallocates using an alternate heap algorithm
 void free(void* pointer)
 {
-	UInt16* block = (UInt16*)((UInt16)pointer - sizeof(UInt16) * 2);
+	Word *block = (Word *) pointer;  // This cast is not required in C, but C++ is retarded.
+	block -= 2;
 	
 	EnterCriticalSection();
 	
-	TotalMemAllocs--;
-	TotalMemUsage -= block[0] - (UInt16)block;
+	// Update free word count
+	FreeWords += block[1] ? block[1] : HeapSize - (block - Heap);
 	
-	// Look forward
-	if (!((UInt16*)block[0])[1]) block[0] = ((UInt16*)block[0])[0];
-	
-	// Look backward
-	if ((block[1] != (UInt16)block) && !((UInt16*)block[1])[1])
+	// Recombine a proceeding free region
+	if(block[1] && !((block + block[1])[0]))
 	{
-		((UInt16*)block[1])[0] = block[0];
-		if (block[0] && ((UInt16*)(block[0]))[1]) ((UInt16*)(block[0]))[1] = block[1];
-		block[1] = 0;
+		Word *nextblock = block + block[1];
+		// Test if the proceeding free region is the last block
+		if(nextblock[1])
+		{
+			// Since we're recombining with the proceeding free block, the block after next, which was pointing to the block
+			// to be recombined, needs to have its back reference updated (we're removing the recombined node)
+			*(nextblock + nextblock[1]) += block[1];
+			block[1] += nextblock[1];
+		}
+		else
+			block[1] = 0;
 	}
+	
+	// Recombine a preceeding free region (a value of -1 for the back reference indicates that the block is allocated and that it
+	// is the first block)
+	if(block[0] != -1 && !((block - block[0])[0]))
+	{
+		Word *prevblock = block - block[0];
+		if(block[1])
+		{
+			// This time, the proceeding block needs to have its back reference updated (we're removing the node being freed)
+			*(block + block[1]) += prevblock[1];
+			prevblock[1] += block[1];
+		}
+		else
+			prevblock[1] = 0;
+	}
+	
+	// Free the block
 	else
-	{
-		// Clear the back pointer
-		block[1] = 0;
-	}
-
+		block[0] = 0;
+		
 	ExitCriticalSection();
 }

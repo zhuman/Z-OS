@@ -9,6 +9,13 @@ typedef struct
 	UInt64 ByteLength;
 	Bool IsLive;
 	UInt64 Position;
+	
+	// For use by FS drivers
+	void* Data1;
+	void* Data2;
+	void* Data3;
+	void* Data4;
+	
 } PartInternal;
 
 Int16 InternalReadPart(PartInternal* part, UInt64 pos, UInt8* buffer, UInt16 bufLen);

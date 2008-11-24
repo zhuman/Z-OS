@@ -1,7 +1,7 @@
 #include "..\Z-OS.h"
 #include "stdio.h"
 
-char* RealFile = "C:\\Users\\Owner\\Desktop\\DiskDump.txt";
+char* RealFile = "C:\\Users\\Zachary\\Desktop\\DiskDump.txt";
 FILE* fileHandle;
 
 Int16 FileDeviceRead(Int16 id, UInt64 pos, UInt8* buffer, UInt16 bufferLen)

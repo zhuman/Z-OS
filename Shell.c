@@ -5,6 +5,21 @@
 extern List Threads;
 #define ASM_INST(x) {__asm__ volatile (x);}
 
+void InitShell(void)
+{
+	UInt16 shellThread;
+	Int16 ret;
+	IThread* shellInt;
+	if ((ret = CreateObject(TypeThread,&shellThread,null))) return;
+	if ((ret = GetInterface(shellThread,CodeIThread,(void**)&shellInt)))
+	{
+		ReleaseObject(shellThread);
+		return;
+	}
+	ret = shellInt->Start(shellThread,ShellThreadProc,null);
+	ReleaseObject(shellThread);
+}	
+
 Int8 CompareCmd(UInt8* buffer, char* cmd)
 {
 	Int16 i = 0;

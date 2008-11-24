@@ -4,7 +4,23 @@
 //#include "..\..\FileDevice\Public.h"
 
 // This must be here in order to boot Z-OS
-int main(void){return BootOS();}
+int main(void)
+{
+	AD1PCFGH = AD1PCFGL = AD2PCFGL = 0xFFFF;  // A/D pins ALL DIGITAL
+	
+	// Initialize INT1 as the "program" button
+	INTCON2bits.INT1EP = 1;  // interrupt on falling edge
+	IPC5bits.INT1IP = 7;     // highest priority interrupt
+	IFS1bits.INT1IF = 0;
+	IEC1bits.INT1IE = 1;     // interrupt enabled
+	
+	// Pre-driver startup sequence
+	OpenUART1(0x8000, 0x400, 20);
+	
+	puts("I will now proceed to booting Z-OS:\r\n");
+	
+	return BootOS();
+}
 
 // Called before the thread scheduler has been initialized.
 // You can customize which subsystems are used by simply 
@@ -19,9 +35,9 @@ void Phase0Init(void)
 	
 	InitSerialPorts();
 	// Initialize other device drivers here
-	InitSD();
-	InitFAT();
-	InitVirtualFileDevice();
+	//InitSD();
+	//InitFAT();
+	//InitVirtualFileDevice();
 }
 
 // Called after the thread manager has been initialized, but 
@@ -30,9 +46,10 @@ void Phase1Init(void)
 {
 	// Create the system worker threads and register the Delegate type.
 	//InitializeDelegates();
+	InitShell();
 }
 
-void TestSDMount(void)
+/*void TestSDMount(void)
 {
 	UInt16 serHandle;
 	UInt16 sdHandle;
@@ -98,7 +115,7 @@ void TestSDSimpleIO(void)
 	if ((ret = OpenObject("SerialPort1", &serHandle))) return;
 	if ((ret = GetInterface(serHandle, CodeISimpleIO, (void**)&serIo))) return;
 	
-	ret = OpenObject("VirtualFile", &handle);
+	ret = OpenObject("SD", &handle);
 	printf("OpenObject called on SD: %d\r\n", ret);
 	
 	ret = GetInterface(handle,CodeISimpleIO, (void**)&io);
@@ -122,33 +139,25 @@ void TestSDSimpleIO(void)
 	
 	ReleaseObject(serHandle);
 	ReleaseObject(handle);
-}
+}*/
 
 extern size_t TotalMemUsage;
 
 extern void CloseVirtualFile(void);
 
-void StartupThreadProc(void)
+/*void StartupThreadProc(void)
 {
 	puts("---------------------------\r\nStarting tests...\r\n---------------------------\r\n");
 	
+	for(;;);
 	//TestSDSimpleIO();
-	TestSDMount();
+	//TestSDMount();
 	
-	CloseVirtualFile();
+	//CloseVirtualFile();
 	
 	puts("---------------------------\r\nRetiring for the night...\r\n---------------------------\r\n");
 	printf("Memory usage was: 0x%x\r\n", TotalMemUsage);
 	
 	// Clever animation to show that the chip is alive:
-	for(;;)
-	{
-/*		Int32 i;
-		for (i = 0; i < 0xffffffff; i++);
-		puts(".  \n");
-		for (i = 0; i < 0xffffffff; i++);
-		puts(" . \n");
-		for (i = 0; i < 0xffffffff; i++);
-		puts("  .\n");
-*/	}
-}
+	for(;;);
+}*/
