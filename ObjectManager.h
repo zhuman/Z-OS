@@ -29,7 +29,7 @@ typedef struct
 typedef struct
 {
 	// Opens an existing object or creates a new one.
-	Int16 (*CreateObject)(UInt16* handle, char* path, char** reparse);
+	Int16 (*CreateObject)(UInt16 handle, UInt16* newHandle, char* path, char** reparse);
 } INamespace;
 
 // This code can be used as the basis for type manager functions

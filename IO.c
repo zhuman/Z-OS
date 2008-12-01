@@ -33,13 +33,14 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 	//char hintHolder[8] = {0};
 	
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
-	if (obj)
+	if (obj && obj->Data)
 	{
 		PartInternal* part;
 		UInt16 partHandle;
 		InternalObject* partObj;
 		Int16 i;
 		PartitionTable* partTable;
+		DeviceInternal* dev = (DeviceInternal*)(obj->Data);
 		
 		EnterCriticalSection();
 		
@@ -64,7 +65,7 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 			return ErrorOutOfMemory;
 		}
 		part->IsLive = True;
-		part->Device = (DeviceInternal*)(obj->Data);
+		part->Device = dev;
 		if ((ret = InternalObjectFromHandle(partHandle,&partObj)))
 		{
 			ReleaseObject(partHandle);
@@ -85,16 +86,16 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 			return ErrorOutOfMemory;
 		}
 		
-		puts("About to read partition table.\r\n");
 		// Ask the volume manager to read the partition table
-		if (!LoadMBR((DeviceInternal*)(obj->Data),partTable))
+		if (!LoadMBR(dev,partTable))
 		{
+			PartitionTableEntry* entry = EntryFromPartitionIndex(partTable,partition);
 			puts("Device is partitioned!\r\n");
 			// Create a partition object based on the partition table
-			if (GetNumPartitions(partTable) > partition)
+			if (GetNumPartitions(partTable) > partition && entry)
 			{
-				part->FirstByte = (UInt64)(partTable->Partition0.FirstSector) * (UInt64)(((DeviceInternal*)(obj->Data))->Info.SectorSize);
-				part->ByteLength = (UInt64)(partTable->Partition0.NumSectors) * (UInt64)(((DeviceInternal*)(obj->Data))->Info.SectorSize);
+				part->FirstByte = (UInt64)(entry->FirstSector) * (UInt64)(dev->Info.SectorSize);
+				part->ByteLength = (UInt64)(entry->NumSectors) * (UInt64)(dev->Info.SectorSize);
 				zfree(partTable);
 			}
 			else
@@ -107,8 +108,9 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 		{
 			zfree(partTable);
 			
+			// Since the device is just one big partition, create a partition object to represent it all
 			part->FirstByte = 0;
-			ret = ((DeviceInternal*)(obj->Data))->Funcs.GetAvailableBytes(((DeviceInternal*)(obj->Data))->DeviceId,&(part->ByteLength));
+			ret = dev->Funcs.GetAvailableBytes(dev->DeviceId,&(part->ByteLength));
 			if (ret)
 			{
 				ExitCriticalSection();
@@ -116,12 +118,7 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 			}
 		}
 		
-		if (!hint)
-		{
-			// hint = hintHolder;
-			// hint = GuessPartition(
-		}
-		else if (!strcmp("RAW",hint))
+		if (hint && !strcmp("RAW",hint))
 		{
 			// If the user only wanted to mount the drive in raw mode, we are finished.
 			ExitCriticalSection();
@@ -136,10 +133,11 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 			if (fs && ((hint && !strcmp(fs->Info.Name,hint)) || !hint))
 			{
 				puts("Trying to detect...\r\n");
+				
 				// Try to detect the FS
 				if (fs->Funcs.Detect(part))
 				{
-					puts("Detect successful.\r\n");
+					printf("Detect successful: %s\r\n",fs->Info.Name);
 					// Try to mount the FS
 					ret = fs->Funcs.MountDevice(part);
 					if (ret)
@@ -148,9 +146,9 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 						return ret;
 					}
 					// Yay, we mounted it
-					((DeviceInternal*)(obj->Data))->IsMounted = True;
-					((DeviceInternal*)(obj->Data))->MountedFS = fs;
+					dev->IsMounted = True;
 					
+					part->FileSystem = fs;
 					part->IsLive = True;
 					
 					ExitCriticalSection();
@@ -189,7 +187,7 @@ Int16 DeviceUnmount(UInt16 handle,UInt16 partition)
 			if (ret == ErrorSuccess)
 			{
 				((DeviceInternal*)(obj->Data))->IsMounted = False;
-				((DeviceInternal*)(obj->Data))->MountedFS = Null;
+				//((DeviceInternal*)(obj->Data))->MountedFS = Null;
 			}
 			// If it failed, just return to the user?
 			ExitCriticalSection();
@@ -474,7 +472,6 @@ Int16 InternalReadDevice(DeviceInternal* device, UInt64 pos, UInt8* buffer, UInt
 {
 	Int16 ret;
 	if (!device) return ErrorNullArg;
-	puts("InternalReadDevice called...\r\n");
 	if (device->Info.CanRead)
 	{
 		if (device->Funcs.Read)
@@ -537,14 +534,13 @@ Int16 InternalWriteDevice(DeviceInternal* device, UInt64 pos, UInt8* buffer, UIn
 Int16 InternalWritePart(PartInternal* part, UInt64 pos, UInt8* buffer, UInt16 bufLen)
 {
 	if (!part || !(part->Device)) return ErrorNullArg;
-	return InternalWriteDevice(part->Device,pos+part->FirstByte,buffer,bufLen,False);
+	return InternalWriteDevice(part->Device,pos + part->FirstByte,buffer,bufLen,False);
 }
 
 Int16 InternalReadPart(PartInternal* part, UInt64 pos, UInt8* buffer, UInt16 bufLen)
 {
-	puts("InternalPartRead called...\r\n");
-	printf("First byte: %d\r\n",(UInt16)(part->FirstByte));
 	if (!part || !(part->Device)) return ErrorNullArg;
+	printf("Reading %u bytes at %llu\r\n",bufLen,pos);
 	return InternalReadDevice(part->Device,pos + part->FirstByte,buffer,bufLen,False);
 }
 

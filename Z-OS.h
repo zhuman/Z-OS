@@ -58,6 +58,7 @@ __inline static int Sgn(int x)
 #include "Queue.h"
 #include "Delegate.h"
 #include "IO.h"
+#include "Devices\Partition.h"
 #include "Devices\File.h"
 #include "Devices\VirtualFile.h"
 #include "CacheManager.h"

@@ -25,5 +25,6 @@ typedef struct
 Int16 GetNumPartitions(PartitionTable* table);
 Int16 LoadMBR(DeviceInternal* dev, PartitionTable* table);
 Int16 GuessPartition(PartitionTableEntry table, char* hint);
+PartitionTableEntry* EntryFromPartitionIndex(PartitionTable* table, Int8 i);
 
 #endif

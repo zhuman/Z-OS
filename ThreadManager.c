@@ -268,6 +268,14 @@ Int16 ThreadGetInterface(UInt16 code, void** interface)
 			*interface = (void*)&inter;
 			break;
 		}
+	case CodeIWaitable:
+		{
+			const IWaitable inter = 
+			{
+				ThreadInterfaceStartWait
+			};
+			*interface = (void*)&inter;
+		}
 	default:
 		return ErrorInvalidInterface;
 	}
@@ -325,11 +333,33 @@ void ThreadInterfaceDestroy(InternalObject* obj)
 	ExitCriticalSection();
 }
 
+Int16 ThreadInterfaceStartWait(UInt16 handle)
+{
+	InternalObject* obj;
+	InternalObjectFromHandle(handle,&obj);
+	if (obj && obj->Data)
+	{
+		ThreadInternal* thr = obj->Data;
+		EnterCriticalSection();
+		if (thr->State == Stopped)
+		{
+			ExitCriticalSection();
+			return ErrorNoWait;
+		}
+		ExitCriticalSection();
+		return ErrorSuccess;
+	}
+	else
+	{
+		return ErrorInvalidHandle;
+	}
+}
+
 UInt16 ThreadInterfaceGetID(UInt16 handle)
 {
 	InternalObject* obj;
 	InternalObjectFromHandle(handle,&obj);
-	if (obj)
+	if (obj && obj->Data)
 	{
 		UInt16 ret = 0;
 		EnterCriticalSection();
@@ -448,11 +478,15 @@ Int16 ThreadInterfaceResume(UInt16 handle)
 	InternalObject* obj;
 	Int16 ret;
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
-	if (obj)
+	if (obj && obj->Data)
 	{
+		ThreadInternal* thr = (ThreadInternal*)(obj->Data);
 		EnterCriticalSection();
-		((ThreadInternal*)(obj->Data))->State &= ~Suspended;
-		QueueThread((ThreadInternal*)(obj->Data));
+		thr->State &= ~Suspended;
+		if (thr->State != Waiting)
+		{
+			QueueThread(thr);
+		}
 		ExitCriticalSection();
 		return ErrorSuccess;
 	}
@@ -464,8 +498,27 @@ Int16 ThreadInterfaceResume(UInt16 handle)
 
 Int16 ThreadInterfaceStop(UInt16 handle)
 {
-	
-	return ErrorSuccess;
+	InternalObject* obj;
+	Int16 ret;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
+	if (obj && obj->Data)
+	{
+		ThreadInternal* thr = (ThreadInternal*)(obj->Data);
+		EnterCriticalSection();
+		thr->State = Stopped;
+		DequeueThread(thr);
+		FinishWait(thr,null);
+		if (CurrentThread == thr)
+		{
+			YieldThread();
+		}
+		ExitCriticalSection();
+		return ErrorSuccess;
+	}
+	else
+	{
+		return ErrorInvalidHandle;
+	}
 }
 
 Int16 WaitForObject(UInt16 handle)
@@ -484,7 +537,10 @@ Int16 WaitForObject(UInt16 handle)
 		DequeueThread(CurrentThread);
 		AddListItem(&(CurrentThread->WaitHandles),(void*)handle);
 		CurrentThread->State = Waiting;
+		
+		// Yield to another thread until the wait has completed
 		YieldThread();
+		
 		ExitCriticalSection();
 		return ErrorSuccess;
 	}
@@ -494,12 +550,13 @@ Int16 WaitForObject(UInt16 handle)
 	}
 }
 
-Int16 WaitForObjects(UInt16 handles[], UInt16 handleCount)
+Int16 WaitForObjects(UInt16 handles[], UInt16 handleCount, Bool all)
 {
 	IWaitable* interface;
 	Int16 ret = ErrorNoWait;
 	int i;
 	EnterCriticalSection();
+	CurrentThread->WaitMode = all ? WaitAll : WaitAny;
 	for (i = 0; i < handleCount; i++)
 	{
 		if ((ret = GetInterface(handles[i],CodeIWaitable,(void**)&interface))) continue;
@@ -517,7 +574,10 @@ Int16 WaitForObjects(UInt16 handles[], UInt16 handleCount)
 	{
 		DequeueThread(CurrentThread);
 		CurrentThread->State = Waiting;
+		
+		// Yield to another thread until the wait has completed
 		YieldThread();
+		
 		ExitCriticalSection();
 		return ErrorSuccess;
 	}
@@ -543,11 +603,12 @@ Int16 FinishWait(void* data, ThreadInternal* specThread)
 			InternalObject* obj;
 			if (InternalObjectFromHandle((UInt16)GetListItem(&(thread->WaitHandles),j),&obj) == ErrorSuccess)
 			{
-				if (obj && obj->Data == data)
+				if (obj && (obj->Data == data))
 				{
 					RemoveListItem(&thread->WaitHandles,j);
-					if (thread->WaitHandles.Length == 0)
+					if (((thread->WaitMode == WaitAll) && (thread->WaitHandles.Length == 0)) || (thread->WaitMode == WaitAny))
 					{
+						ClearList(&(thread->WaitHandles));
 						if (thread->State & Suspended)
 						{
 							thread->State = Suspended;
@@ -590,6 +651,8 @@ void DequeueThread(ThreadInternal* thread)
 	ExitCriticalSection();
 }
 
+volatile UInt16 NumRunningThreads = 0;
+
 // This function is the actual starting address of a thread
 // and serves to provide a hard-coded backup in case the user's
 // thread routine returns. It also makes it easier on the user
@@ -598,7 +661,14 @@ void DequeueThread(ThreadInternal* thread)
 // switched to and then enter an infinite loop.
 void ThreadProc(ThreadStartParams* params)
 {
+	EnterCriticalSection();
+	
 	printf("Starting thread at address 0x%x\r\n",(UInt16)(params->StartFunc));
+	
+	// Increment the number of running threads to detect shutdowns
+	NumRunningThreads++;
+	
+	ExitCriticalSection();
 	
 	// Call the user's function.
 	params->StartFunc(params->Parameter);
@@ -614,8 +684,20 @@ void ThreadProc(ThreadStartParams* params)
 		CurrentThread->State = Stopped;
 		obj->KernelReferences--;
 		
+		NumRunningThreads--;
+		
 		// Remove the thread from the thread queue
 		DequeueThread(CurrentThread);
+		
+		// Join any threads waiting on this thread
+		FinishWait(CurrentThread,null);
+		
+		// If no other threads are running, reset the system
+		if (!NumRunningThreads)
+		{
+			puts("All threads on the system have exited. The system may have become unstable. Resetting...\r\n");
+			__asm__ ("reset");
+		}	
 		
 		// Force a context switch
 		YieldThread();
@@ -715,12 +797,12 @@ void __attribute__((interrupt,auto_psv)) _T1Interrupt(void)
 
 void __attribute__((interrupt, auto_psv)) _AddressError(void)
 {
-	printf("Address Error\r\n Occurred in thread %d at 0x%x\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
+	printf("Address Error\r\n Occurred in thread %d at 0x%X\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
 #ifdef ResetOnError
 	__asm__ volatile ("reset");
 #else
 	CurrentThread->State = Stopped;
-	EnterCriticalSection();
+	SR &= ~(PreemptInterruptPriority << 5);
 	DequeueThread(CurrentThread);
 	INTCON1bits.ADDRERR = 0;
 	IFS0bits.T1IF = 1;
@@ -729,12 +811,12 @@ void __attribute__((interrupt, auto_psv)) _AddressError(void)
 
 void __attribute__((interrupt, auto_psv)) _StackError(void)
 {
-	printf("Stack Error\r\n Occurred in thread %d at 0x%x\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
+	printf("Stack Error\r\n Occurred in thread %d at 0x%X\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
 #ifdef ResetOnError
 	__asm__ volatile ("reset");
 #else
 	CurrentThread->State = Stopped;
-	EnterCriticalSection();
+	SR &= ~(PreemptInterruptPriority << 5);
 	DequeueThread(CurrentThread);
 	INTCON1bits.STKERR = 0;
 	IFS0bits.T1IF = 1;
@@ -745,17 +827,17 @@ void __attribute__((interrupt, auto_psv)) _MathError(void)
 {
 	if (INTCON1bits.DIV0ERR)
 	{
-		printf("Divide by 0\r\n Ocurred in thread %d at 0x%x\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
+		printf("Divide by 0\r\n Ocurred in thread %d at 0x%X\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
 	}
 	else
 	{
-		printf("Math Error\r\n Occurred in thread %d at 0x%x\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
+		printf("Math Error\r\n Occurred in thread %d at 0x%X\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
 	}
 #ifdef ResetOnError
 	__asm__ volatile ("reset");
 #else
 	CurrentThread->State = Stopped;
-	EnterCriticalSection();
+	SR &= ~(PreemptInterruptPriority << 5);
 	DequeueThread(CurrentThread);
 	INTCON1bits.DIV0ERR = 0;
 	INTCON1bits.MATHERR = 0;
@@ -763,7 +845,7 @@ void __attribute__((interrupt, auto_psv)) _MathError(void)
 #endif
 }
 
-void __attribute__((interrupt, auto_psv)) _DMACError(void)
+/*void __attribute__((interrupt, auto_psv)) _DMACError(void)
 {
 	printf("DMA Controller Error\r\n Occurred in thread %d at 0x%x\r\n",CurrentThread->ThreadID,*(UInt16*)(_WREG15 - 24));
 #ifdef ResetOnError
@@ -775,4 +857,4 @@ void __attribute__((interrupt, auto_psv)) _DMACError(void)
 	INTCON1bits.DMACERR = 0;
 	IFS0bits.T1IF = 1;
 #endif
-}
+}*/

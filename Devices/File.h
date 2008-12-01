@@ -38,7 +38,7 @@ typedef struct
 typedef struct
 {
 	char* Name;
-	DeviceInternal* Device;
+	PartInternal* Partition;
 	struct t_FileSystemInternal* FileSystem;
 	Bool IsDirectory;
 	FileAttributes Attributes;

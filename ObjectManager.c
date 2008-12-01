@@ -173,30 +173,46 @@ Int16 OpenObject(char* name, UInt16* handle)
 			ExitCriticalSection();
 			return ErrorSuccess;
 		}
-		else if (strstr(name,obj->Name) == name && name[strlen(obj->Name)] == '\\')
+		else if ((strstr(name,obj->Name) == name) && (strlen(name) > strlen(obj->Name)) && (name[strlen(obj->Name)] == '\\'))
 		{
 			INamespace* namespace;
 			Int16 ret;
 			if (GetInterfaceInternal(i,CodeINamespace,(void**)(&namespace)) == ErrorSuccess)
 			{
-				char truncName[0x50] = {0};
+				char* truncName = zmalloc(0x50);
 				char* reparseName;
 				UInt16 namespaceHandle;
 				
-				strcpy(truncName,obj->Name);
+				if (!truncName)
+				{
+					ExitCriticalSection();
+					return ErrorOutOfMemory;
+				}
+				
+				strcpy(truncName,&(name[strlen(obj->Name)]));
 				if ((ret = OpenObject(obj->Name,&namespaceHandle)) != ErrorSuccess)
 				{
+					zfree(truncName);
 					ExitCriticalSection();
 					return ret;
 				}
-				ret = namespace->CreateObject(handle,truncName,&reparseName);
+				if (!(reparseName = zmalloc(0x50)))
+				{
+					ReleaseObject(namespaceHandle);
+					zfree(truncName);
+					ExitCriticalSection();
+					return ErrorOutOfMemory;
+				}
+				ret = namespace->CreateObject(namespaceHandle,handle,truncName,&reparseName);
+				ReleaseObject(namespaceHandle);
 				// If a reparse point was hit, reparseName contains the new location
 				if (ret == ErrorReparse)
 				{
 					// And begin again...
 					ret = OpenObject(reparseName,handle);
-					zfree(reparseName);
 				}
+				zfree(reparseName);
+				zfree(truncName);
 				ExitCriticalSection();
 				return ret;
 			}

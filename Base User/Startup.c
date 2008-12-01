@@ -15,9 +15,9 @@ int main(void)
 	IEC1bits.INT1IE = 1;     // interrupt enabled
 	
 	// Pre-driver startup sequence
-	OpenUART1(0x8000, 0x400, 20);
+	//OpenUART2(0x8000, 0x400, 20);
 	
-	puts("I will now proceed to booting Z-OS:\r\n");
+	//puts("I will now proceed to booting Z-OS:\r\n");
 	
 	return BootOS();
 }
@@ -35,8 +35,8 @@ void Phase0Init(void)
 	
 	InitSerialPorts();
 	// Initialize other device drivers here
-	//InitSD();
-	//InitFAT();
+	InitSD();
+	InitFAT();
 	//InitVirtualFileDevice();
 }
 
@@ -46,10 +46,10 @@ void Phase1Init(void)
 {
 	// Create the system worker threads and register the Delegate type.
 	//InitializeDelegates();
-	InitShell();
+	//InitShell();
 }
 
-/*void TestSDMount(void)
+void TestSDMount(void)
 {
 	UInt16 serHandle;
 	UInt16 sdHandle;
@@ -69,24 +69,28 @@ void Phase1Init(void)
 	if ((ret = OpenObject("SerialPort1", &serHandle))) return;
 	if ((ret = GetInterface(serHandle, CodeISimpleIO, (void**)&serIo))) return;
 	
-	if ((ret = OpenObject("VirtualFile",&sdHandle)))
+	if ((ret = OpenObject("SD",&sdHandle)))
 	{
 		printf("Error on OpenObject(\"SD\"): 0x%x\r\n",ret);
 		return;
 	}
+	else puts("OpenObject(\"SD\") succeeded.\r\n");
 	if ((ret = GetInterface(sdHandle,CodeIDevice,(void**)&sdDev)))
 	{
 		printf("Error on GetInterface(\"SD\"): 0x%x\r\n",ret);
 		return;
 	}
+	else puts("GetInterface(\"SD\") succeeded.\r\n");
 	if ((ret = sdDev->Mount(sdHandle, 0, "FAT", "SDPart1")))
 	{
 		printf("Error on Mount(\"SD\"): 0x%x\r\n",ret);
 		return;
 	}
+	else puts("Mount(\"SD\") succeeded.\r\n");
 	ReleaseObject(sdHandle);
 	
-	if ((ret = OpenObject("SDPart1\\MyFile.txt",&fsHandle)))
+	if ((ret = OpenObject("SDPart1\\CoolFold\\Cooler\\FollowMe\\Found.txt",&fsHandle)))
+	//if ((ret = OpenObject("SDPart1\\Cooler.txt",&fsHandle)))
 	{
 		printf("Error at OpenObject(file): 0x%x\r\n",ret);
 		return;
@@ -132,32 +136,33 @@ void TestSDSimpleIO(void)
 		puts("Reading from SD...\r\n");
 		ret = io->Read(handle, buffer, 512);
 		printf("Finished reading from SD: %d\r\n",ret);
-		serIo->Write(serHandle, buffer, 512);
+		//serIo->Write(serHandle, buffer, 512);
 		puts("Finished sending through serial port...\r\n");
 		//for (;;);
 	}
 	
 	ReleaseObject(serHandle);
 	ReleaseObject(handle);
-}*/
+}
 
 extern size_t TotalMemUsage;
 
 extern void CloseVirtualFile(void);
 
-/*void StartupThreadProc(void)
+#define ASM_INST(x) {__asm__ volatile (x);}
+
+void StartupThreadProc(void)
 {
+	
 	puts("---------------------------\r\nStarting tests...\r\n---------------------------\r\n");
 	
-	for(;;);
 	//TestSDSimpleIO();
-	//TestSDMount();
+	TestSDMount();
 	
 	//CloseVirtualFile();
 	
 	puts("---------------------------\r\nRetiring for the night...\r\n---------------------------\r\n");
 	printf("Memory usage was: 0x%x\r\n", TotalMemUsage);
 	
-	// Clever animation to show that the chip is alive:
 	for(;;);
-}*/
+}

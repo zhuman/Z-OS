@@ -59,7 +59,6 @@ typedef struct
 	DeviceInfo Info; // Information about the device
 	DeviceFuncs Funcs; // Functions implemented by the driver
 	Bool IsMounted;
-	struct t_FileSystemInternal* MountedFS; // The file system used to mount it
 	UInt64 Position; // The current seek position
 } DeviceInternal;
 

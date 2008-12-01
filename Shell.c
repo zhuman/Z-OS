@@ -53,7 +53,7 @@ void ShellThreadProc(void* arg)
 			pBuf = (UInt8*)buffer;
 			if (CompareCmd(pBuf,"info") || CompareCmd(pBuf, "ver"))
 			{
-				puts("Z-OS v0.1a\r\nA real-time multitasking operating system for the PIC 24H.\r\nCoded by Zachary Northrup\r\n");
+				puts("Z-OS v1.2\r\nA real-time multitasking operating system for the PIC 24H.\r\nCoded by Zachary Northrup\r\n");
 			}
 			else if (CompareCmd(pBuf,"listThreads"))
 			{

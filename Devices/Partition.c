@@ -8,18 +8,19 @@ extern Int16 TypePartition;
 
 // Partition objects are only created when Mount is called on a device with a partition number.
 
-Int16 PartCreateObject(UInt16* handle, char* path, char** reparse)
+Int16 PartCreateObject(UInt16 handle, UInt16* newHandle, char* path, char** reparse)
 {
 	InternalObject* obj;
-	Int16 ret;
-	if ((ret = InternalObjectFromHandle(*handle,&obj))) return ret;
-	if (obj)
+	Int16 ret = ErrorSuccess;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
+	if (obj && (obj->Data))
 	{
+		PartInternal* part = (PartInternal*)(obj->Data);
+		
 		EnterCriticalSection();
-		if (((PartInternal*)(obj->Data))->IsLive && ((PartInternal*)(obj->Data))->Device->IsMounted)
+		if (part->IsLive && part->Device->IsMounted)
 		{
 			InternalObject* fileObj;
-			
 			FileInternal* file = zmalloc(sizeof(FileInternal));
 			if (!file)
 			{
@@ -28,7 +29,7 @@ Int16 PartCreateObject(UInt16* handle, char* path, char** reparse)
 			}
 			
 			// Set up a file structure
-			file->Device = ((PartInternal*)(obj->Data))->Device;
+			file->Partition = part;
 			file->Name = zmalloc(strlen(path) + 1);
 			if (!file->Name)
 			{
@@ -39,17 +40,28 @@ Int16 PartCreateObject(UInt16* handle, char* path, char** reparse)
 			strcpy(file->Name, path);
 			
 			// TODO: Ask the FS driver for file information
-			ret = ((PartInternal*)(obj->Data))->FileSystem->Funcs.GetFile(file,reparse);
-			if (ret)
+			if ((ret = part->FileSystem->Funcs.GetFile(file,reparse)))
 			{
 				ExitCriticalSection();
 				zfree(file);
 				return ret;
 			}
 			
+			puts("Creating file object\r\n");
+			
 			// Create the actual file object
-			CreateObject(TypeFile, handle, (char*)0);
-			InternalObjectFromHandle(*handle,&fileObj);
+			if ((ret = CreateObject(TypeFile, newHandle, (char*)0)))
+			{
+				ExitCriticalSection();
+				zfree(file);
+				return ret;
+			}
+			if ((ret = InternalObjectFromHandle(*newHandle,&fileObj)))
+			{
+				ExitCriticalSection();
+				zfree(file);
+				return ret;
+			}
 			fileObj->Data = file;
 		}
 		else
@@ -69,7 +81,6 @@ Int16 PartRead(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 {
 	InternalObject* obj;
 	Int16 ret;
-	puts("PartRead called...\r\n");
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
 	if (obj)
 	{

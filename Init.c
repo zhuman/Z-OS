@@ -25,7 +25,7 @@ int BootOS(void)
 	
 	OpenUART1(0x8000, 0x400, 20);
 	//OpenUART2(0x8000, 0x400, 20);
-	puts("Welcome to Z-OS\r\nBooting...\r\n");
+	puts("Welcome to Z-OS 1.2\r\nBooting...\r\n");
 	printf("System boots: %d\r\n",BootNum++);
 	
 	//for(;;);

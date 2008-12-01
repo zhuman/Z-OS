@@ -48,5 +48,6 @@
 #define ErrorSignature			0x312
 #define ErrorChecksum			0x313
 #define ErrorInvalidCluster		0x314
+#define ErrorInvalidFileName	0x315
 
 #endif

@@ -28,27 +28,31 @@ file_000=.
 file_001=.
 file_002=.
 file_003=.
+file_004=.
 [GENERATED_FILES]
 file_000=no
 file_001=no
 file_002=no
 file_003=no
+file_004=no
 [OTHER_FILES]
 file_000=no
 file_001=no
 file_002=no
 file_003=no
+file_004=no
 [FILE_INFO]
 file_000=Startup.c
 file_001=..\Z-OS.a
 file_002=C:\Users\Zachary\Desktop\Robotics Projects\SDDriver\SD Card.a
-file_003=..\p24HJ256GP610.gld
+file_003=C:\Users\Zachary\Desktop\Robotics Projects\FATDriver\NewFAT.a
+file_004=..\p24HJ256GP610.gld
 [SUITE_INFO]
 suite_guid={479DDE59-4D56-455E-855E-FFF59A3DB57E}
 suite_state=
 [TOOL_SETTINGS]
 TS{7D9C6ECE-785D-44CB-BA22-17BF2E119622}=-g
-TS{25AC22BD-2378-4FDB-BFB6-7345A15512D3}=-g -fno-short-double -Wall -mlarge-scalar
+TS{25AC22BD-2378-4FDB-BFB6-7345A15512D3}=-g -fno-short-double -Wall -mlarge-code -mlarge-data -mlarge-scalar -mconst-in-data
 TS{7DAC9A1D-4C45-45D6-B25A-D117C74E8F5A}=-Map="$(BINDIR_)$(TARGETBASE).map" --report-mem --cref -o"$(BINDIR_)$(TARGETBASE).$(TARGETSUFFIX)"
 TS{509E5861-1E2A-483B-8B6B-CA8DB7F2DD78}=
 [INSTRUMENTED_TRACE]

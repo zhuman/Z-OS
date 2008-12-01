@@ -17,7 +17,7 @@ size_t FreeWords = HeapSize;
 //#undef free
 
 // Wraps 'malloc' in a thread-safe zeroing wrapper; but not the kind in which you can find candy
-void* zmalloc2(size_t size)
+/*void* zmalloc2(size_t size)
 {
 	void* space;
 	EnterCriticalSection();
@@ -45,7 +45,7 @@ void zfree2(void* pointer)
 	puts("After free.\r\n");
 	TotalMemAllocs--;
 	ExitCriticalSection();
-}
+}*/
 
 //#define malloc zmalloc
 //#define free zfree
@@ -133,6 +133,9 @@ void* malloc(size_t size)
 				// Zero the actual memory (depending on this in an allocator is bad practice, however)
 				memset(&block[2], 0, (wsize - 2) * WordSize);
 				
+				TotalMemAllocs++;
+				TotalMemUsage += wsize * WordSize;
+				
 				ExitCriticalSection();
 				return &block[2];
 			}
@@ -158,6 +161,7 @@ void free(void* pointer)
 	
 	// Update free word count
 	FreeWords += block[1] ? block[1] : HeapSize - (block - Heap);
+	TotalMemUsage = (HeapSize - FreeWords) * WordSize;
 	
 	// Recombine a proceeding free region
 	if(block[1] && !((block + block[1])[0]))
@@ -193,6 +197,8 @@ void free(void* pointer)
 	// Free the block
 	else
 		block[0] = 0;
+		
+	TotalMemAllocs--;
 		
 	ExitCriticalSection();
 }

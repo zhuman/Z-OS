@@ -23,6 +23,12 @@ typedef enum
 	Suspended = 4
 } ThreadStateEnum;
 
+typedef enum
+{
+	WaitAny,
+	WaitAll
+} ThreadWaitMode;
+
 typedef struct
 {
 	void (*StartFunc)(void*);
@@ -45,6 +51,8 @@ typedef struct
 	ThreadStartParams StartParams;
 	// The current state of the thread, used to setup and update context switching.
 	ThreadStateEnum State;
+	// The type of wait the thread is in
+	ThreadWaitMode WaitMode;
 	// The priority of the thread without boosts.
 	UInt8 BasePriority;
 	// A list of handles a thread is currently waiting on.
@@ -93,6 +101,7 @@ void StartTimer1(void);
 Int16 ThreadGetInterface(UInt16 code, void** interface);
 void ThreadInterfaceCreate(InternalObject* obj);
 void ThreadInterfaceDestroy(InternalObject* obj);
+Int16 ThreadInterfaceStartWait(UInt16 handle);
 // The implementation of IThread for, you guessed it, threads:
 UInt16 ThreadInterfaceGetID(UInt16 handle);
 void ThreadInterfaceSetPriority(UInt16 handle, UInt8 priority);
@@ -107,7 +116,7 @@ void QueueThread(ThreadInternal*);
 void DequeueThread(ThreadInternal*);
 Int16 FinishWait(void* data, ThreadInternal* specThread);
 Int16 WaitForObject(UInt16 handle);
-Int16 WaitForObjects(UInt16 handles[], UInt16 handleCount);
+Int16 WaitForObjects(UInt16 handles[], UInt16 handleCount, Bool all);
 
 // This function must be implemented by the user and
 // is the first user thread started in the system.
