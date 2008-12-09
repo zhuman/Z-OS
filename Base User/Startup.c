@@ -90,7 +90,7 @@ void TestSDMount(void)
 	ReleaseObject(sdHandle);
 	
 	if ((ret = OpenObject("SDPart1\\CoolFold\\Cooler\\FollowMe\\Found.txt",&fsHandle)))
-	//if ((ret = OpenObject("SDPart1\\Cooler.txt",&fsHandle)))
+	//if ((ret = OpenObject("SDPart1\\test.txt",&fsHandle)))
 	{
 		printf("Error at OpenObject(file): 0x%x\r\n",ret);
 		return;
@@ -100,6 +100,7 @@ void TestSDMount(void)
 		printf("Error on GetInterface(file): 0x%x\r\n",ret);
 		return;
 	}
+	puts("Ready to read from file.\r\n");
 	
 	ReleaseObject(fsHandle);
 	ReleaseObject(serHandle);
