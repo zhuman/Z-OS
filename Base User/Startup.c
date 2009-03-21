@@ -1,26 +1,10 @@
 #include "..\Z-OS.h"
-#include "..\..\SDDriver\Public.h"
-#include "..\..\FATDriver\Public.h"
+#include "..\..\SDCard\Public.h"
+#include "..\..\NewFAT\Public.h"
 //#include "..\..\FileDevice\Public.h"
 
 // This must be here in order to boot Z-OS
-int main(void)
-{
-	AD1PCFGH = AD1PCFGL = AD2PCFGL = 0xFFFF;  // A/D pins ALL DIGITAL
-	
-	// Initialize INT1 as the "program" button
-	INTCON2bits.INT1EP = 1;  // interrupt on falling edge
-	IPC5bits.INT1IP = 7;     // highest priority interrupt
-	IFS1bits.INT1IF = 0;
-	IEC1bits.INT1IE = 1;     // interrupt enabled
-	
-	// Pre-driver startup sequence
-	//OpenUART2(0x8000, 0x400, 20);
-	
-	//puts("I will now proceed to booting Z-OS:\r\n");
-	
-	return BootOS();
-}
+int main(void){return BootOS();}
 
 // Called before the thread scheduler has been initialized.
 // You can customize which subsystems are used by simply 
@@ -89,8 +73,7 @@ void TestSDMount(void)
 	else puts("Mount(\"SD\") succeeded.\r\n");
 	ReleaseObject(sdHandle);
 	
-	if ((ret = OpenObject("SDPart1\\CoolFold\\Cooler\\FollowMe\\Found.txt",&fsHandle)))
-	//if ((ret = OpenObject("SDPart1\\test.txt",&fsHandle)))
+	if ((ret = OpenObject("SDPart1\\TEST.TXT",&fsHandle)))
 	{
 		printf("Error at OpenObject(file): 0x%x\r\n",ret);
 		return;
@@ -100,7 +83,6 @@ void TestSDMount(void)
 		printf("Error on GetInterface(file): 0x%x\r\n",ret);
 		return;
 	}
-	puts("Ready to read from file.\r\n");
 	
 	ReleaseObject(fsHandle);
 	ReleaseObject(serHandle);
@@ -149,8 +131,6 @@ void TestSDSimpleIO(void)
 extern size_t TotalMemUsage;
 
 extern void CloseVirtualFile(void);
-
-#define ASM_INST(x) {__asm__ volatile (x);}
 
 void StartupThreadProc(void)
 {
