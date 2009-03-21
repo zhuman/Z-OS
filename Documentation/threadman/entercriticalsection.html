@@ -18,9 +18,10 @@
   <pre>void EnterCriticalSection(void);</pre>
   <h4>Description</h4>
   <p>This function temporarily disables thread preemption until <a href="exitcriticalsection.html">ExitCriticalSection</a> is called by raising the current interrupt processor priority (IRQL) to the level of the preemption interrupt. As a general rule, this should never be called by user code unless absolutely necessary. It is almost always better to use a synchronization primitive such as a <a href="../semaphore/index.html">Semaphore</a>. Critical sections may be nested within one another.</p>
-  <!-- InstanceEndEditable --></div>
+  <!-- InstanceEndEditable -->
+</div>
 <div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
-Copyright &copy; 2008 Zachary Northrup
+Copyright &copy; 2009 Zachary Northrup
 </div>
 </body>
 <!-- InstanceEnd --></html>

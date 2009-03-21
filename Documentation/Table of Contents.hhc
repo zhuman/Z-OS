@@ -168,8 +168,20 @@
 		</OBJECT>
 	<UL>
 		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IThread.GetID">
+			<param name="Local" value="thread\getid.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IThread.SetPriority">
+			<param name="Local" value="thread\setpriority.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
 			<param name="Name" value="IThread.Start">
 			<param name="Local" value="thread\start.html">
+			</OBJECT>
+		<LI> <OBJECT type="text/sitemap">
+			<param name="Name" value="IThread.Stop">
+			<param name="Local" value="thread\stop.html">
 			</OBJECT>
 	</UL>
 	<LI> <OBJECT type="text/sitemap">

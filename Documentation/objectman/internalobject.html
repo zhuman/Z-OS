@@ -9,7 +9,8 @@
 </head>
 
 <body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
-<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->The InternalObject Structure<!-- InstanceEndEditable --></div>
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->The InternalObject Structure<!-- InstanceEndEditable -->
+</div>
 <div id="content" style="padding:10px;margin:10px">
   <!-- InstanceBeginEditable name="ContentRegion" -->
   <p>The object manager internally stores InternalObject structures as its means of representing all of the objects on the system. This structure is documented here because of its use to type managers. It is the structure passed to the Create and Destroy function of the <a href="igeneric.html">IGeneric</a> interface.</p>
@@ -39,9 +40,10 @@
   <p>This is the null-terminated name string for the object or null if it has no name.</p>
   <p><em>Data</em></p>
   <p>This field should be used by type managers to store data or pointers to structures containing data about the object. It is never touched by the object manager, so type managers are responsible for memory allocation and deallocation. The DataLength field is provided as another way to store data.</p>
-  <!-- InstanceEndEditable --></div>
+  <!-- InstanceEndEditable -->
+</div>
 <div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
-Copyright &copy; 2008 Zachary Northrup
+Copyright &copy; 2009 Zachary Northrup
 </div>
 </body>
 <!-- InstanceEnd --></html>

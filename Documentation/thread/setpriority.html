@@ -3,28 +3,28 @@
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <!-- InstanceBeginEditable name="doctitle" -->
-<title>AddListItem</title>
+<title>IThread.SetPriority</title>
 <!-- InstanceEndEditable -->
-<!-- InstanceBeginEditable name="head" -->
-<!-- InstanceEndEditable -->
+<!-- InstanceBeginEditable name="head" --><!-- InstanceEndEditable -->
 </head>
 
 <body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
-<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->AddListItem<!-- InstanceEndEditable -->
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->IThread.SetPriority<!-- InstanceEndEditable -->
 </div>
 <div id="content" style="padding:10px;margin:10px">
   <!-- InstanceBeginEditable name="ContentRegion" -->
   <h4>Definition</h4>
-  <pre>void AddListItem(List* list, void* item);</pre>
+  <pre>void (*SetPriority)(UInt16 handle, UInt8 priority);</pre>
   <h4>Description</h4>
-  <p>Adds an item to the end of the list.</p>
+  <p>Sets the priority of a thread. Threads with higher priorities always run over threads of lower priorities, if they are ready.</p>
   <h4>Arguments</h4>
-  <p><em>list</em></p>
-  <p>A pointer to a List structure that forms the basis for this list.</p>
-  <p><em>item</em></p>
-  <p>The new item to add to the list.</p>
-  <!-- InstanceEndEditable -->
-</div>
+  <p><em>handle</em></p>
+  <p>A handle to a thread object.</p>
+  <p><em>priority</em></p>
+  <p>The new priority of the thread. Must be from 0 to 7. 0 is the priority of the idle thread, so the effective lowest priority is 1.</p>
+  <h4>Return</h4>
+  <p>None</p>
+  <!-- InstanceEndEditable --></div>
 <div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
 Copyright &copy; 2009 Zachary Northrup
 </div>

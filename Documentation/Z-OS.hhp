@@ -69,6 +69,9 @@ lists\removelistitem.html
 lists\replacelistitem.html
 lists\sortlist.html
 lists\swaplistitems.html
+thread\stop.html
+thread\getid.html
+thread\setpriority.html
 
 [INFOTYPES]
 

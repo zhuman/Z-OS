@@ -1,31 +1,28 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
-<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
+<html xmlns="http://www.w3.org/1999/xhtml"><!-- InstanceBegin template="../../../../Documents and Settings/Owner/Desktop/Z-OS/Documentation/Templates/Main.dwt" codeOutsideHTMLIsLocked="false" -->
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <!-- InstanceBeginEditable name="doctitle" -->
-<title>WaitForObjects</title>
+<title>IThread.Stop</title>
 <!-- InstanceEndEditable -->
 <!-- InstanceBeginEditable name="head" --><!-- InstanceEndEditable -->
 </head>
 
 <body style="font-family:Segoe,Calibri,Verdana, Arial, Helvetica, sans-serif;padding:10px;background-image:url(/Z-OS.png); background-attachment:fixed; background-position:bottom right; background-repeat:no-repeat">
-<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->WaitForObjects<!-- InstanceEndEditable -->
+<div style="background-color:#666666;border:1px #000000 solid;color:#FFFFFF;font-weight:bold;font-size:2em;margin:10px;padding:10px"><!-- InstanceBeginEditable name="HeaderRegion" -->IThread.Stop<!-- InstanceEndEditable -->
 </div>
 <div id="content" style="padding:10px;margin:10px">
   <!-- InstanceBeginEditable name="ContentRegion" -->
   <h4>Definition</h4>
-  <pre>Int16 WaitForObjects(UInt16 handles[], UInt16 handleCount);</pre>
+  <pre>Int16 (*Stop)(UInt16 handle);</pre>
   <h4>Description</h4>
-  <p>This method suspends execution of the current thread until all of the the objects waited upon signal to resume. See <a href="waitforobject.html">WaitForObject</a> for waiting upon only one object.</p>
+  <p>Stops a running thread. Use with caution as any objects opened or memory allocated by the thread will not be closed or deallocated.</p>
   <h4>Arguments</h4>
-  <p><em>handle</em>s</p>
-  <p>An array of handles, each of whom's object is to be waited upon.</p>
-  <p><em>handleCount</em></p>
-  <p>The number of handles in the <em>handles</em> array.</p>
+  <p><em>handle</em></p>
+  <p>A handle to a thread object.</p>
   <h4>Return</h4>
   <p><a href="../errorcodes.html">Error Code</a></p>
-  <!-- InstanceEndEditable -->
-</div>
+  <!-- InstanceEndEditable --></div>
 <div id="copyright" style="font-size:smaller;padding:10px;margin:10px">
 Copyright &copy; 2009 Zachary Northrup
 </div>
