@@ -75,6 +75,14 @@ typedef struct
 
 typedef struct
 {
+	UInt16 Length;
+	Bool Receive;
+	void* DMABuffer;
+	void* UserBuffer;
+} TransmitQueueItem;
+
+typedef struct
+{
 	UInt8 Channel;
 	
 	// DMA configuration
@@ -83,6 +91,8 @@ typedef struct
 	UInt16* PeriphAddr;
 	void** StartAddr;
 	UInt16* BufLen;
+	
+	List TransmitQueue;
 	
 	Bool IsTransmitting;
 } DMAInternal;

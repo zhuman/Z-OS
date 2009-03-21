@@ -27,6 +27,8 @@ typedef struct
 	// The IO functions for opened files
 	Int16 (*ReadFile)(FileInternal* file, UInt64 pos, UInt8* buffer, UInt16 bufLen);
 	Int16 (*WriteFile)(FileInternal* file, UInt64 pos, UInt8* buffer, UInt16 bufLen);
+	// Flushes any buffers held by the file system, at least for the specified file
+	Int16 (*FlushFile)(FileInternal* file);
 } FileSystemFuncs;
 
 typedef struct t_FileSystemInternal

@@ -3,14 +3,14 @@
 
 // DMA memory is layed out as a heap
 #define DMAHeapSize 0x2000
-UInt8 __attribute__ ((space(dma))) DMAHeap[DMAHeapSize];
+UInt8 __attribute__ ((space(dma))) DMAHeap[DMAHeapSize] = {0};
 
 UInt16 TypeDMA;
 List DMAObjects = {0};
 
 UInt8 NextDMAChannel = 0;
 
-void DMACreate(InternalObject* obj)
+static void DMACreate(InternalObject* obj)
 {
 	DMAInternal* dma = zmalloc(sizeof(DMAInternal));
 	if (!dma) return;
@@ -81,7 +81,7 @@ void DMACreate(InternalObject* obj)
 }
 
 // Theoretically, this should never be called
-void DMADestroy(InternalObject* obj)
+static void DMADestroy(InternalObject* obj)
 {
 	if (!obj) return;
 	if (!obj->Data) return;
@@ -89,7 +89,7 @@ void DMADestroy(InternalObject* obj)
 	zfree(obj->Data);
 }
 
-Int16 DMAGetInterface(UInt16 code, void** interface)
+static Int16 DMAGetInterface(UInt16 code, void** interface)
 {
 	switch (code)
 	{
@@ -111,7 +111,8 @@ Int16 DMAGetInterface(UInt16 code, void** interface)
 			DMAGetSize,
 			DMASetDevice,
 			DMAGetDevice,
-			DMA
+			DMASetFlags,
+			DMAGetFlags
 		};
 		*interface = (void*)&inter;
 		break;
@@ -137,8 +138,8 @@ Int16 DMAGetInterface(UInt16 code, void** interface)
 		};
 		*interface = (void*)&inter;
 		break;
-	}
-*/	default:
+	}*/
+	default:
 		return ErrorInvalidInterface;
 	}
 	return ErrorSuccess;
@@ -146,89 +147,46 @@ Int16 DMAGetInterface(UInt16 code, void** interface)
 
 void InitDMA(void)
 {
+	UInt16 handle;
+	Int16 ret;
+	UInt16 i;
+	InternalObject* obj;
+	
 	// Create the DMA type
 	TypeRegistration dma = {0};
 	dma.Type = TypeDMA = GetUniqueTypeCode();
 	dma.GetInterface = DMAGetInterface;
 	
-	// Create the 8 DMA channel objects
+	// Init the DMA-enabled memory heap
+	HeapInit(DMAHeap, DMAHeapSize);
 	
+	// Create the 8 DMA channel objects
+	for (i = 0; i < 8; i++)
+	{
+		char name[5] = {0};
+		sprintf(name, "DMA%d", i + 1);
+		if ((ret = CreateObject(TypeDMA,&handle,name))) return;
+		ReleaseObject(handle);
+	}
+	
+	if ((ret = OpenObject("DMA1",&handle))) return;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return;
+	if ((ret = CreateSymbolicLink("DMA",obj))) return;
 }
 
 // Functions for allocating/deallocating from the DMA heap
 
-void* AllocDMA(size_t size)
+static void* AllocDMA(size_t size)
 {
-	UInt16* block = (UInt16*)DMAHeap;
-	UInt16* lastBlock = block;
-	
-	// Make the size even
-	if (size & 1) size++;
-	
-	EnterCriticalSection();
-	for(;;)
-	{
-		// If we are at a free spot
-		if (!(block[0]) || (!(block[1]) && (block[0] - (UInt16)block > (UInt16)size + 4)))
-		{
-			UInt16* oldBlock = (UInt16*)block[0];
-			UInt16 i;
-			
-			// If there is no more room for this block, return null
-			if (((UInt16)block - (UInt16)DMAHeap + 4 + (UInt16)size) > DMAHeapSize)
-			{
-				ExitCriticalSection();
-				return null;
-			}
-			
-			block[1] = (UInt16)lastBlock;
-			
-			if (!block[0] || (block[0] - (UInt16)block > (UInt16)size + 8))
-			{
-				block[0] = (UInt16)block + 4 + (UInt16)size;
-				((UInt16*)(block[0]))[0] = (UInt16)oldBlock;
-				((UInt16*)(block[0]))[1] = 0;
-			}
-			
-			//TotalMemAllocs++;
-			//TotalMemUsage += (UInt16)size;
-			
-			// Zero the block
-			for (i = 0; i < (UInt16)(size >> 1); i++) ((UInt16*)(block + 4))[i] = 0;
-			ExitCriticalSection();
-			return (void*)((UInt16)block + 4);
-		}
-		
-		lastBlock = block;
-		block = (UInt16*)(block[0]);
-	}
-	
+	return HeapAlloc((UInt16*)DMAHeap,DMAHeapSize,size);
 }
 
-
-void FreeDMA(void* pointer)
+static void FreeDMA(void* pointer)
 {
-	UInt16* block = (UInt16*)((UInt16)pointer - 4);
-	
-	EnterCriticalSection();
-	
-	//TotalMemAllocs--;
-	//TotalMemUsage -= block[0] - (UInt16)block;
-	
-	// Look forward
-	if (!((UInt16*)block[0])[1]) block[0] = ((UInt16*)block[0])[0];
-	// Look backward
-	if (block[1] != (UInt16)block && !((UInt16*)block[1])[1]) ((UInt16*)block[1])[0] = block[0];
-	
-	// Clear the back pointer
-	block[1] = 0;
-	
-	ExitCriticalSection();
+	HeapFree((UInt16*)DMAHeap,DMAHeapSize,pointer);
 }
 
 static void RunDMAxInterrupt(UInt8 channel)
 {
 	
 }
-
-

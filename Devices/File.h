@@ -12,10 +12,10 @@ typedef enum
 
 typedef enum
 {
-	ReadOnly,
-	Hidden,
-	Archive,
-	System
+	ReadOnly = 1,
+	Hidden = 2,
+	Archive = 4,
+	System = 8
 } FileAttributes;
 
 typedef struct
