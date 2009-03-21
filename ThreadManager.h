@@ -96,21 +96,6 @@ void YieldThread(void);
 void EnterCriticalSection(void);
 void ExitCriticalSection(void);
 void ThreadProc(ThreadStartParams* params);
-void StartTimer1(void);
-
-Int16 ThreadGetInterface(UInt16 code, void** interface);
-void ThreadInterfaceCreate(InternalObject* obj);
-void ThreadInterfaceDestroy(InternalObject* obj);
-Int16 ThreadInterfaceStartWait(UInt16 handle);
-// The implementation of IThread for, you guessed it, threads:
-UInt16 ThreadInterfaceGetID(UInt16 handle);
-void ThreadInterfaceSetPriority(UInt16 handle, UInt8 priority);
-UInt8 ThreadInterfaceGetPriority(UInt16 handle);
-UInt16 ThreadInterfaceStart(UInt16 handle, ThreadFunction startFunc, void* arg);
-UInt16 ThreadInterfaceGetState(UInt16 handle);
-Int16 ThreadInterfaceSuspend(UInt16 handle);
-Int16 ThreadInterfaceResume(UInt16 handle);
-Int16 ThreadInterfaceStop(UInt16 handle);
 
 void QueueThread(ThreadInternal*);
 void DequeueThread(ThreadInternal*);

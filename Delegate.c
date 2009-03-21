@@ -1,17 +1,17 @@
 #include "Z-OS.h"
 
-void DelegateInterfaceCreate(InternalObject* obj)
+static void DelegateInterfaceCreate(InternalObject* obj)
 {
 	DelegateInternal* intObj = zmalloc(sizeof(DelegateInternal));
 	obj->Data = intObj;
 }
 
-void DelegateInterfaceDestroy(InternalObject* obj)
+static void DelegateInterfaceDestroy(InternalObject* obj)
 {
 	zfree(obj->Data);
 }
 
-Int16 DelegateInterfaceInvoke(UInt16 handle, void* arg)
+static Int16 DelegateInterfaceInvoke(UInt16 handle, void* arg)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -46,7 +46,7 @@ Int16 DelegateInterfaceInvoke(UInt16 handle, void* arg)
 	}
 }
 
-Int16 DelegateInterfaceInvokeAsync(UInt16 handle, void* arg)
+static Int16 DelegateInterfaceInvokeAsync(UInt16 handle, void* arg)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -102,7 +102,7 @@ Int16 DelegateInterfaceInvokeAsync(UInt16 handle, void* arg)
 	}
 }
 
-Int16 DelegateInterfaceAddHandler(UInt16 handle, DelegateHandler handler)
+static Int16 DelegateInterfaceAddHandler(UInt16 handle, DelegateHandler handler)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -121,7 +121,7 @@ Int16 DelegateInterfaceAddHandler(UInt16 handle, DelegateHandler handler)
 	}
 }
 
-Int16 DelegateInterfaceRemoveHandler(UInt16 handle, DelegateHandler handler)
+static Int16 DelegateInterfaceRemoveHandler(UInt16 handle, DelegateHandler handler)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -142,7 +142,7 @@ Int16 DelegateInterfaceRemoveHandler(UInt16 handle, DelegateHandler handler)
 	}
 }
 
-Int16 DelegateInterfaceStartWait(UInt16 handle)
+static Int16 DelegateInterfaceStartWait(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -161,7 +161,7 @@ Int16 DelegateInterfaceStartWait(UInt16 handle)
 	}
 }
 
-Int16 DelegateGetInterface(Int16 code, void** interface)
+static Int16 DelegateGetInterface(Int16 code, void** interface)
 {
 	switch (code)
 	{
@@ -202,7 +202,7 @@ Int16 DelegateGetInterface(Int16 code, void** interface)
 	return ErrorSuccess;
 }
 
-void WorkerThreadProc(void* arg)
+static void WorkerThreadProc(void* arg)
 {
 	UInt16 mutexHandle;
 	UInt16 queueHandle;

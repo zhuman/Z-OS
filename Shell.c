@@ -5,22 +5,7 @@
 extern List Threads;
 #define ASM_INST(x) {__asm__ volatile (x);}
 
-void InitShell(void)
-{
-	UInt16 shellThread;
-	Int16 ret;
-	IThread* shellInt;
-	if ((ret = CreateObject(TypeThread,&shellThread,null))) return;
-	if ((ret = GetInterface(shellThread,CodeIThread,(void**)&shellInt)))
-	{
-		ReleaseObject(shellThread);
-		return;
-	}
-	ret = shellInt->Start(shellThread,ShellThreadProc,null);
-	ReleaseObject(shellThread);
-}	
-
-Int8 CompareCmd(UInt8* buffer, char* cmd)
+static Int8 CompareCmd(UInt8* buffer, char* cmd)
 {
 	Int16 i = 0;
 	while (buffer[i] == cmd[i])
@@ -31,7 +16,7 @@ Int8 CompareCmd(UInt8* buffer, char* cmd)
 	return False;
 }
 
-void ShellThreadProc(void* arg)
+static void ShellThreadProc(void* arg)
 {
 	UInt8 buffer[17] = {0};
 	UInt8* pBuf = (UInt8*)buffer;
@@ -114,4 +99,19 @@ void ShellThreadProc(void* arg)
 			memset(buffer,0,16);
 		}
 	}
+}
+
+void InitShell(void)
+{
+	UInt16 shellThread;
+	Int16 ret;
+	IThread* shellInt;
+	if ((ret = CreateObject(TypeThread,&shellThread,null))) return;
+	if ((ret = GetInterface(shellThread,CodeIThread,(void**)&shellInt)))
+	{
+		ReleaseObject(shellThread);
+		return;
+	}
+	ret = shellInt->Start(shellThread,ShellThreadProc,null);
+	ReleaseObject(shellThread);
 }

@@ -6,7 +6,7 @@
 
 List RunningTimers = {0};
 
-Int16 TimerInterfaceSetInterval(UInt16 handle, UInt32 time)
+static Int16 TimerInterfaceSetInterval(UInt16 handle, UInt32 time)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -22,7 +22,7 @@ Int16 TimerInterfaceSetInterval(UInt16 handle, UInt32 time)
 	}
 }
 
-UInt32 TimerInterfaceGetInterval(UInt16 handle)
+static UInt32 TimerInterfaceGetInterval(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -37,7 +37,7 @@ UInt32 TimerInterfaceGetInterval(UInt16 handle)
 	}
 }
 
-Int16 TimerInterfaceStart(UInt16 handle)
+static Int16 TimerInterfaceStart(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -56,7 +56,7 @@ Int16 TimerInterfaceStart(UInt16 handle)
 	}
 }
 
-Int16 TimerInterfaceStop(UInt16 handle)
+static Int16 TimerInterfaceStop(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -81,7 +81,7 @@ Int16 TimerInterfaceStop(UInt16 handle)
 	}
 }
 
-Int16 TimerInterfaceReset(UInt16 handle)
+static Int16 TimerInterfaceReset(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -97,7 +97,7 @@ Int16 TimerInterfaceReset(UInt16 handle)
 	}
 }
 
-Int16 TimerInterfaceIsRunning(UInt16 handle)
+static Int16 TimerInterfaceIsRunning(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -112,7 +112,7 @@ Int16 TimerInterfaceIsRunning(UInt16 handle)
 	}
 }
 
-void TimerInterfaceCreate(InternalObject* obj)
+static void TimerInterfaceCreate(InternalObject* obj)
 {
 	TimerInternal* timer = zmalloc(sizeof(TimerInternal));
 	if (!timer) return;
@@ -122,12 +122,12 @@ void TimerInterfaceCreate(InternalObject* obj)
 	timer->Running = False;
 }
 
-void TimerInterfaceDestroy(InternalObject* obj)
+static void TimerInterfaceDestroy(InternalObject* obj)
 {
 	zfree(obj->Data);
 }
 
-Int16 TimerInterfaceStartWait(UInt16 handle)
+static Int16 TimerInterfaceStartWait(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret = 0;
@@ -147,7 +147,7 @@ Int16 TimerInterfaceStartWait(UInt16 handle)
 	}
 }
 
-Int16 TimerGetInterface(UInt16 code, void** interface)
+static Int16 TimerGetInterface(UInt16 code, void** interface)
 {
 	switch (code)
 	{

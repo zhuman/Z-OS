@@ -19,10 +19,7 @@ int BootOS(void)
 	IPC5bits.INT1IP = 7;     // highest priority interrupt
 	IFS1bits.INT1IF = 0;
 	IEC1bits.INT1IE = 1;     // interrupt enabled
-	
-	// Pre-driver startup sequence
-	//HeapInit();
-	
+		
 	OpenUART1(0x8000, 0x400, 20);
 	//OpenUART2(0x8000, 0x400, 20);
 	puts("Welcome to Z-OS 1.2\r\nBooting...\r\n");

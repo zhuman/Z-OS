@@ -178,67 +178,248 @@ void IdleThread(void)
 	}
 }
 
-// This function starts the system's threading engine.
-// It should not return unless an error occurs in the
-// object manager. At least one thread must exist in
-// the system in order for anything to actually happen.
-Int16 InitializeThreading(void)
+
+// This contains the next unused thread ID
+UInt16 ThreadIDCounter = 1;
+
+// Initializes a thread object to point to a new internal thread
+// structure. It also initializes the thread's initial properties.
+static void ThreadInterfaceCreate(InternalObject* obj)
 {
 	Int16 ret = 0;
-	UInt16 initThreadHandle = 0;
-	IThread* threadInterface;
-	InternalObject* idleIntObj;
+	ThreadInternal* internalObj = zmalloc(sizeof(ThreadInternal));
 	
-	printf("Registering thread type...\r\n");
+	EnterCriticalSection();
+	
+	if (!internalObj) { ret = ErrorOutOfMemory; goto ReturnFunc; }
+	
+	internalObj->ThreadID = ThreadIDCounter++;
+	
+	// If this is the idle thread, set its priority to 0
+	if (internalObj->ThreadID == 1)
 	{
-		TypeRegistration threadType = {0};
-		threadType.Type = TypeThread;
-		threadType.GetInterface = ThreadGetInterface;
-		if ((ret = RegisterTypeManager(threadType))) return ret;
+		internalObj->BasePriority = 0;
 	}
+	else
+	{
+		internalObj->BasePriority = 1;
+	}
+	internalObj->Stack = zmalloc(DefaultStackSize);
+	if (!(internalObj->Stack)) { zfree(internalObj); ret = ErrorOutOfMemory; goto ReturnFunc; }
+	internalObj->StackSize = DefaultStackSize;
+	// Leave the stack uninitialized until the user calls Start() on it.
+	internalObj->StackPointer = internalObj->Stack;
 	
-	// Create the system idle looping thread
-	if ((ret = CreateObject(TypeThread,&initThreadHandle,"IdleThread"))) return ret;
-	if ((ret = GetInterface(initThreadHandle,CodeIThread,(void*)&threadInterface))) return ret;
-	threadInterface->Start(initThreadHandle,(ThreadFunction)IdleThread,0);
-	InternalObjectFromHandle(initThreadHandle, &idleIntObj);
+	obj->Flags |= ObjectFlagPermanent;
 	
-	// Create the "CurrentThread" symbolic link
-	if ((ret = CreateSymbolicLink("CurrentThread", idleIntObj))) return ret;
+	// Add the thread object to the threads list point the object to it.
+	AddListItem(&Threads,internalObj);
+	obj->Data = internalObj;
 	
-	// Release the idle thread
-	ReleaseObject(initThreadHandle);
+	// Great success!
+	ret = ErrorSuccess;
+ReturnFunc:
+	ExitCriticalSection();
+	//return ret;
+}
+
+static void ThreadInterfaceDestroy(InternalObject* obj)
+{
+	EnterCriticalSection();
 	
-	// Create the StartupThreadProc thread, implemented by the user
-	if ((ret = CreateObject(TypeThread,&initThreadHandle,"StartupThread"))) return ret;
-	if ((ret = GetInterface(initThreadHandle,CodeIThread,(void*)&threadInterface))) return ret;
-	threadInterface->Start(initThreadHandle,(ThreadFunction)StartupThreadProc,0);
-	ReleaseObject(initThreadHandle);
-	
-	Phase1Init();
-	
-	printf("Starting init thread...\r\n");
-	
-	CurrentStackPointer = (unsigned int**)&(((ThreadInternal*)GetListItem(&Threads,0))->StackPointer);
-	
-	// Start the timer that controls the system clock and preemption
-	StartTimer1();
-	// We are ready to start preempting
-	ThreadManagerInitialized = True;
-	
-	// "Restore" the context of the first thread
-	SwitchContext();
-	RESTORE_CONTEXT();
-	
-	// Pretend to return, but we are really returning to the first thread.
-	asm volatile ("return");
-	
-	// We'll never get here:
-	return 1;
+	ExitCriticalSection();
+}
+
+static Int16 ThreadInterfaceStartWait(UInt16 handle)
+{
+	InternalObject* obj;
+	InternalObjectFromHandle(handle,&obj);
+	if (obj && obj->Data)
+	{
+		ThreadInternal* thr = obj->Data;
+		EnterCriticalSection();
+		if (thr->State == Stopped)
+		{
+			ExitCriticalSection();
+			return ErrorNoWait;
+		}
+		ExitCriticalSection();
+		return ErrorSuccess;
+	}
+	else
+	{
+		return ErrorInvalidHandle;
+	}
+}
+
+static UInt16 ThreadInterfaceGetID(UInt16 handle)
+{
+	InternalObject* obj;
+	InternalObjectFromHandle(handle,&obj);
+	if (obj && obj->Data)
+	{
+		UInt16 ret = 0;
+		EnterCriticalSection();
+		ret = ((ThreadInternal*)(obj->Data))->ThreadID;
+		ExitCriticalSection();
+		return ret;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static void ThreadInterfaceSetPriority(UInt16 handle, UInt8 priority)
+{
+	InternalObject* obj;
+	InternalObjectFromHandle(handle,&obj);
+	if (obj)
+	{
+		// Limit it to the 7 user thread priorities.
+		if (priority == 0) priority = 1;
+		else if (priority >= 8) priority = 7;
+		
+		EnterCriticalSection();
+		
+		DequeueThread((ThreadInternal*)(obj->Data));
+		((ThreadInternal*)(obj->Data))->BasePriority = priority;
+		QueueThread((ThreadInternal*)(obj->Data));
+		
+		ExitCriticalSection();
+	}
+}
+
+static UInt8 ThreadInterfaceGetPriority(UInt16 handle)
+{
+	InternalObject* obj;
+	InternalObjectFromHandle(handle,&obj);
+	if (obj)
+	{
+		return ((ThreadInternal*)(obj->Data))->BasePriority;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static UInt16 ThreadInterfaceStart(UInt16 handle, ThreadFunction startFunc, void* arg)
+{
+	InternalObject* obj;
+	InternalObjectFromHandle(handle,&obj);
+	if (obj)
+	{
+		ThreadInternal* thread = (ThreadInternal*)(obj->Data);
+		UInt16 ret = 0;
+		EnterCriticalSection();
+		
+		// Store the start address and the arg and then initialize the stack.
+		thread->StartParams.StartFunc = startFunc;
+		thread->StartParams.Parameter = arg;
+		thread->StackPointer = (int*)InitStack((unsigned int*)(thread->Stack),&(thread->StartParams));
+		thread->StackTopPointer = thread->Stack + thread->StackSize - TrapStackSize;
+		
+		// Setup the thread for running if it isn't suspended.
+		if (!(thread->State & Suspended))
+		{
+			QueueThread(thread);
+		}
+		
+		ExitCriticalSection();
+		
+		return ret;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static UInt16 ThreadInterfaceGetState(UInt16 handle)
+{
+	InternalObject* obj;
+	Int16 ret;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
+	if (obj)
+	{
+		return ((ThreadInternal*)(obj->Data))->State;
+	}
+	else
+	{
+		return 0;
+	}
+}
+
+static Int16 ThreadInterfaceSuspend(UInt16 handle)
+{
+	InternalObject* obj;
+	Int16 ret;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
+	if (obj)
+	{
+		EnterCriticalSection();
+		((ThreadInternal*)(obj->Data))->State |= Suspended;
+		DequeueThread((ThreadInternal*)(obj->Data));
+		ExitCriticalSection();
+		return ErrorSuccess;
+	}
+	else
+	{
+		return ErrorInvalidHandle;
+	}
+}
+
+static Int16 ThreadInterfaceResume(UInt16 handle)
+{
+	InternalObject* obj;
+	Int16 ret;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
+	if (obj && obj->Data)
+	{
+		ThreadInternal* thr = (ThreadInternal*)(obj->Data);
+		EnterCriticalSection();
+		thr->State &= ~Suspended;
+		if (thr->State != Waiting)
+		{
+			QueueThread(thr);
+		}
+		ExitCriticalSection();
+		return ErrorSuccess;
+	}
+	else
+	{
+		return ErrorInvalidHandle;
+	}
+}
+
+static Int16 ThreadInterfaceStop(UInt16 handle)
+{
+	InternalObject* obj;
+	Int16 ret;
+	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
+	if (obj && obj->Data)
+	{
+		ThreadInternal* thr = (ThreadInternal*)(obj->Data);
+		EnterCriticalSection();
+		thr->State = Stopped;
+		DequeueThread(thr);
+		FinishWait(thr,null);
+		if (CurrentThread == thr)
+		{
+			YieldThread();
+		}
+		ExitCriticalSection();
+		return ErrorSuccess;
+	}
+	else
+	{
+		return ErrorInvalidHandle;
+	}
 }
 
 // Returns an interface for a thread object.
-Int16 ThreadGetInterface(UInt16 code, void** interface)
+static Int16 ThreadGetInterface(UInt16 code, void** interface)
 {
 	switch (code)
 	{
@@ -280,245 +461,6 @@ Int16 ThreadGetInterface(UInt16 code, void** interface)
 		return ErrorInvalidInterface;
 	}
 	return ErrorSuccess;
-}
-
-// This contains the next unused thread ID
-UInt16 ThreadIDCounter = 1;
-
-// Initializes a thread object to point to a new internal thread
-// structure. It also initializes the thread's initial properties.
-void ThreadInterfaceCreate(InternalObject* obj)
-{
-	Int16 ret = 0;
-	ThreadInternal* internalObj = zmalloc(sizeof(ThreadInternal));
-	
-	EnterCriticalSection();
-	
-	if (!internalObj) { ret = ErrorOutOfMemory; goto ReturnFunc; }
-	
-	internalObj->ThreadID = ThreadIDCounter++;
-	
-	// If this is the idle thread, set its priority to 0
-	if (internalObj->ThreadID == 1)
-	{
-		internalObj->BasePriority = 0;
-	}
-	else
-	{
-		internalObj->BasePriority = 1;
-	}
-	internalObj->Stack = zmalloc(DefaultStackSize);
-	if (!(internalObj->Stack)) { zfree(internalObj); ret = ErrorOutOfMemory; goto ReturnFunc; }
-	internalObj->StackSize = DefaultStackSize;
-	// Leave the stack uninitialized until the user calls Start() on it.
-	internalObj->StackPointer = internalObj->Stack;
-	
-	obj->Flags |= ObjectFlagPermanent;
-	
-	// Add the thread object to the threads list point the object to it.
-	AddListItem(&Threads,internalObj);
-	obj->Data = internalObj;
-	
-	// Great success!
-	ret = ErrorSuccess;
-ReturnFunc:
-	ExitCriticalSection();
-	//return ret;
-}
-
-void ThreadInterfaceDestroy(InternalObject* obj)
-{
-	EnterCriticalSection();
-	
-	ExitCriticalSection();
-}
-
-Int16 ThreadInterfaceStartWait(UInt16 handle)
-{
-	InternalObject* obj;
-	InternalObjectFromHandle(handle,&obj);
-	if (obj && obj->Data)
-	{
-		ThreadInternal* thr = obj->Data;
-		EnterCriticalSection();
-		if (thr->State == Stopped)
-		{
-			ExitCriticalSection();
-			return ErrorNoWait;
-		}
-		ExitCriticalSection();
-		return ErrorSuccess;
-	}
-	else
-	{
-		return ErrorInvalidHandle;
-	}
-}
-
-UInt16 ThreadInterfaceGetID(UInt16 handle)
-{
-	InternalObject* obj;
-	InternalObjectFromHandle(handle,&obj);
-	if (obj && obj->Data)
-	{
-		UInt16 ret = 0;
-		EnterCriticalSection();
-		ret = ((ThreadInternal*)(obj->Data))->ThreadID;
-		ExitCriticalSection();
-		return ret;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-void ThreadInterfaceSetPriority(UInt16 handle, UInt8 priority)
-{
-	InternalObject* obj;
-	InternalObjectFromHandle(handle,&obj);
-	if (obj)
-	{
-		// Limit it to the 7 user thread priorities.
-		if (priority == 0) priority = 1;
-		else if (priority >= 8) priority = 7;
-		
-		EnterCriticalSection();
-		
-		DequeueThread((ThreadInternal*)(obj->Data));
-		((ThreadInternal*)(obj->Data))->BasePriority = priority;
-		QueueThread((ThreadInternal*)(obj->Data));
-		
-		ExitCriticalSection();
-	}
-}
-
-UInt8 ThreadInterfaceGetPriority(UInt16 handle)
-{
-	InternalObject* obj;
-	InternalObjectFromHandle(handle,&obj);
-	if (obj)
-	{
-		return ((ThreadInternal*)(obj->Data))->BasePriority;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-UInt16 ThreadInterfaceStart(UInt16 handle, ThreadFunction startFunc, void* arg)
-{
-	InternalObject* obj;
-	InternalObjectFromHandle(handle,&obj);
-	if (obj)
-	{
-		ThreadInternal* thread = (ThreadInternal*)(obj->Data);
-		UInt16 ret = 0;
-		EnterCriticalSection();
-		
-		// Store the start address and the arg and then initialize the stack.
-		thread->StartParams.StartFunc = startFunc;
-		thread->StartParams.Parameter = arg;
-		thread->StackPointer = (int*)InitStack((unsigned int*)(thread->Stack),&(thread->StartParams));
-		thread->StackTopPointer = thread->Stack + thread->StackSize - TrapStackSize;
-		
-		// Setup the thread for running if it isn't suspended.
-		if (!(thread->State & Suspended))
-		{
-			QueueThread(thread);
-		}
-		
-		ExitCriticalSection();
-		
-		return ret;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-UInt16 ThreadInterfaceGetState(UInt16 handle)
-{
-	InternalObject* obj;
-	Int16 ret;
-	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
-	if (obj)
-	{
-		return ((ThreadInternal*)(obj->Data))->State;
-	}
-	else
-	{
-		return 0;
-	}
-}
-
-Int16 ThreadInterfaceSuspend(UInt16 handle)
-{
-	InternalObject* obj;
-	Int16 ret;
-	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
-	if (obj)
-	{
-		EnterCriticalSection();
-		((ThreadInternal*)(obj->Data))->State |= Suspended;
-		DequeueThread((ThreadInternal*)(obj->Data));
-		ExitCriticalSection();
-		return ErrorSuccess;
-	}
-	else
-	{
-		return ErrorInvalidHandle;
-	}
-}
-
-Int16 ThreadInterfaceResume(UInt16 handle)
-{
-	InternalObject* obj;
-	Int16 ret;
-	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
-	if (obj && obj->Data)
-	{
-		ThreadInternal* thr = (ThreadInternal*)(obj->Data);
-		EnterCriticalSection();
-		thr->State &= ~Suspended;
-		if (thr->State != Waiting)
-		{
-			QueueThread(thr);
-		}
-		ExitCriticalSection();
-		return ErrorSuccess;
-	}
-	else
-	{
-		return ErrorInvalidHandle;
-	}
-}
-
-Int16 ThreadInterfaceStop(UInt16 handle)
-{
-	InternalObject* obj;
-	Int16 ret;
-	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
-	if (obj && obj->Data)
-	{
-		ThreadInternal* thr = (ThreadInternal*)(obj->Data);
-		EnterCriticalSection();
-		thr->State = Stopped;
-		DequeueThread(thr);
-		FinishWait(thr,null);
-		if (CurrentThread == thr)
-		{
-			YieldThread();
-		}
-		ExitCriticalSection();
-		return ErrorSuccess;
-	}
-	else
-	{
-		return ErrorInvalidHandle;
-	}
 }
 
 Int16 WaitForObject(UInt16 handle)
@@ -652,6 +594,65 @@ void DequeueThread(ThreadInternal* thread)
 }
 
 volatile UInt16 NumRunningThreads = 0;
+
+// This function starts the system's threading engine.
+// It should not return unless an error occurs in the
+// object manager. At least one thread must exist in
+// the system in order for anything to actually happen.
+Int16 InitializeThreading(void)
+{
+	Int16 ret = 0;
+	UInt16 initThreadHandle = 0;
+	IThread* threadInterface;
+	InternalObject* idleIntObj;
+	
+	printf("Registering thread type...\r\n");
+	{
+		TypeRegistration threadType = {0};
+		threadType.Type = TypeThread;
+		threadType.GetInterface = ThreadGetInterface;
+		if ((ret = RegisterTypeManager(threadType))) return ret;
+	}
+	
+	// Create the system idle looping thread
+	if ((ret = CreateObject(TypeThread,&initThreadHandle,"IdleThread"))) return ret;
+	if ((ret = GetInterface(initThreadHandle,CodeIThread,(void*)&threadInterface))) return ret;
+	threadInterface->Start(initThreadHandle,(ThreadFunction)IdleThread,0);
+	InternalObjectFromHandle(initThreadHandle, &idleIntObj);
+	
+	// Create the "CurrentThread" symbolic link
+	if ((ret = CreateSymbolicLink("CurrentThread", idleIntObj))) return ret;
+	
+	// Release the idle thread
+	ReleaseObject(initThreadHandle);
+	
+	// Create the StartupThreadProc thread, implemented by the user
+	if ((ret = CreateObject(TypeThread,&initThreadHandle,"StartupThread"))) return ret;
+	if ((ret = GetInterface(initThreadHandle,CodeIThread,(void*)&threadInterface))) return ret;
+	threadInterface->Start(initThreadHandle,(ThreadFunction)StartupThreadProc,0);
+	ReleaseObject(initThreadHandle);
+	
+	Phase1Init();
+	
+	printf("Starting init thread...\r\n");
+	
+	CurrentStackPointer = (unsigned int**)&(((ThreadInternal*)GetListItem(&Threads,0))->StackPointer);
+	
+	// Start the timer that controls the system clock and preemption
+	StartTimer1();
+	// We are ready to start preempting
+	ThreadManagerInitialized = True;
+	
+	// "Restore" the context of the first thread
+	SwitchContext();
+	RESTORE_CONTEXT();
+	
+	// Pretend to return, but we are really returning to the first thread.
+	asm volatile ("return");
+	
+	// We'll never get here:
+	return 1;
+}
 
 // This function is the actual starting address of a thread
 // and serves to provide a hard-coded backup in case the user's

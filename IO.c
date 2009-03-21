@@ -16,17 +16,17 @@ Int16 TypePartition;
 
 // Device Objects
 
-void DeviceCreate(InternalObject* obj)
+static void DeviceCreate(InternalObject* obj)
 {
 	obj->Flags |= ObjectFlagPermanent;
 }
 
-void DeviceDestroy(InternalObject* obj)
+static void DeviceDestroy(InternalObject* obj)
 {
 	// This should never be called until we have more of a PnP system
 }
 
-Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
+static Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -172,7 +172,7 @@ Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path)
 	}
 }
 
-Int16 DeviceUnmount(UInt16 handle,UInt16 partition)
+static Int16 DeviceUnmount(UInt16 handle,UInt16 partition)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -204,7 +204,7 @@ Int16 DeviceUnmount(UInt16 handle,UInt16 partition)
 	}
 }
 
-Bool DeviceIsMounted(UInt16 handle)
+static Bool DeviceIsMounted(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -229,17 +229,17 @@ Bool DeviceIsMounted(UInt16 handle)
 	}
 }
 
-Int16 DeviceSetPowerState(UInt16 handle, PowerStateEnum state)
+static Int16 DeviceSetPowerState(UInt16 handle, PowerStateEnum state)
 {
 	return ErrorSuccess;
 }
 
-Int16 DeviceSendCommand(UInt16 handle, Int16 cmd, Int8* buffer, UInt16 bufferLen)
+static Int16 DeviceSendCommand(UInt16 handle, Int16 cmd, Int8* buffer, UInt16 bufferLen)
 {
 	return ErrorSuccess;
 }
 
-Int16 DeviceRead(UInt16 handle, UInt8* buffer, UInt16 bufLen)
+static Int16 DeviceRead(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -258,7 +258,7 @@ Int16 DeviceRead(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 	}
 }
 
-Int16 DeviceGetAvailableBytes(UInt16 handle, UInt64* bytes)
+static Int16 DeviceGetAvailableBytes(UInt16 handle, UInt64* bytes)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -282,7 +282,7 @@ Int16 DeviceGetAvailableBytes(UInt16 handle, UInt64* bytes)
 	}
 }
 
-Int16 DeviceWrite(UInt16 handle, UInt8* buffer, UInt16 bufLen)
+static Int16 DeviceWrite(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -300,7 +300,7 @@ Int16 DeviceWrite(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 	}
 }
 
-Int16 DeviceSeek(UInt16 handle, Int64 position, SeekRelationEnum relation)
+static Int16 DeviceSeek(UInt16 handle, Int64 position, SeekRelationEnum relation)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -345,7 +345,7 @@ Int16 DeviceSeek(UInt16 handle, Int64 position, SeekRelationEnum relation)
 	}
 }
 
-Int16 DeviceFlush(UInt16 handle)
+static Int16 DeviceFlush(UInt16 handle)
 {
 		InternalObject* obj;
 	Int16 ret;
@@ -363,7 +363,7 @@ Int16 DeviceFlush(UInt16 handle)
 	}
 }
 
-Int16 DeviceGetInterface(UInt16 code, void** interface)
+static Int16 DeviceGetInterface(UInt16 code, void** interface)
 {
 	switch (code)
 	{

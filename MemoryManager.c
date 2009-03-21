@@ -10,57 +10,18 @@ Int64 TotalMemUsage = 0;
 
 #define HeapSize 5000
 
-__attribute__ ((__far__)) Word Heap[HeapSize] = {0};
+__attribute__ ((__far__)) Word MainHeap[HeapSize] = {0};
 size_t FreeWords = HeapSize;
 
-//#undef malloc
-//#undef free
-
-// Wraps 'malloc' in a thread-safe zeroing wrapper; but not the kind in which you can find candy
-/*void* zmalloc2(size_t size)
+void HeapInit(void* heap, size_t size)
 {
-	void* space;
-	EnterCriticalSection();
-	space = calloc(size,1);
-	
-	TotalMemAllocs++;
-	TotalMemUsage = TotalMemUsage + (Int64)size;
-	//if (space > MaxPointer) MaxPointer = space;
-	//if (size > MaxSize) MaxSize = size;
-	
-	ExitCriticalSection();
-	if (!space)
-	{
-		printf("Out of Memory\r\n");
-	}
-	return space;
+	memset(MainHeap,0,size);
 }
 
-// Wraps 'free' in a thread-safe wrapper
-void zfree2(void* pointer)
+void* HeapAlloc(Word* heap, UInt16 heapSize, size_t allocSize)
 {
-	EnterCriticalSection();
-	puts("Before free.\r\n");
-	free(pointer);
-	puts("After free.\r\n");
-	TotalMemAllocs--;
-	ExitCriticalSection();
-}*/
-
-//#define malloc zmalloc
-//#define free zfree
-
-// Initializes an alternate heap algorithm
-void HeapInit(void)
-{
-	memset(Heap,0,HeapSize * sizeof(UInt16));
-}
-
-// Allocates using an alternate heap algorithm
-void* malloc(size_t size)
-{
-	Word *block = Heap;
-	size_t wsize;
+	Word *block = heap;
+	size_t wallocSize;
 	Word backref = -1;
 	Word forwardref = 0;
 	
@@ -68,20 +29,20 @@ void* malloc(size_t size)
 	// block[0] is an offset to the previous node
 	// block[1] is an offset to the next node
 	
-	// Check for zero size
-	if(!size)
+	// Check for zero allocSize
+	if(!allocSize)
 		return NULL;
 	
-	// Align size to a word boundary
-	if(size & (WordSize - 1))
-		size = (size | (WordSize - 1)) + 1;
+	// Align allocSize to a word boundary
+	if(allocSize & (WordSize - 1))
+		allocSize = (allocSize | (WordSize - 1)) + 1;
 	
-	wsize = size / WordSize + 2;
+	wallocSize = allocSize / WordSize + 2;
 	
 	EnterCriticalSection();
 	
 	// Quick free space check
-	if(wsize > FreeWords)
+	if(wallocSize > FreeWords)
 	{
 		ExitCriticalSection();
 		return NULL;
@@ -97,44 +58,44 @@ void* malloc(size_t size)
 		// a back reference. Therefore, a block will be marked as free if its back reference is null.
 		if(!block[0])
 		{
-			// If this is the last block, the forward reference will be null, and the block's size is just the remaining heap
-			// length. Otherwise, the size of this block is the value of the forward reference.
-			size_t bsize = block[1] ? block[1] : HeapSize - (block - Heap);
+			// If this is the last block, the forward reference will be null, and the block's allocSize is just the remaining heap
+			// length. Otherwise, the allocSize of this block is the value of the forward reference.
+			size_t ballocSize = block[1] ? block[1] : heapSize - (block - heap);
 			
 			// Is free region large enough?
-			if(bsize >= wsize)
+			if(ballocSize >= wallocSize)
 			{
 				// Allocate the block by setting the back and forward references to their new values
 				block[0] = backref;
 				
-				// Since a valid block must be at least 3 words long, if the size of the free fragment left after this allocation
+				// Since a valid block must be at least 3 words long, if the allocSize of the free fragment left after this allocation
 				// would be less than 3, just allocate the remainder of the block to avoid unallocatable free fragments.
-				if(bsize - wsize >= 3)
+				if(ballocSize - wallocSize >= 3)
 				{
-					Word *freefragment = block + wsize;
+					Word *freefragment = block + wallocSize;
 					// Insert node for the remainder of the free space
 					freefragment[0] = 0;
 					if(block[1])
 						// Not the last block, inserted free fragment must have a forward reference and the proceeding block must
 						// be updated to point back to the new free fragment as well.
-						freefragment[1] = *(block + bsize) = bsize - wsize;
+						freefragment[1] = *(block + ballocSize) = ballocSize - wallocSize;
 					else
 						freefragment[1] = 0;
 					
-					block[1] = wsize;
+					block[1] = wallocSize;
 					
 					// Update free word count
-					FreeWords -= wsize;
+					FreeWords -= wallocSize;
 				}
 				// Else, the forward reference stays the same
 				else
-					FreeWords -= bsize;
+					FreeWords -= ballocSize;
 				
 				// Zero the actual memory (depending on this in an allocator is bad practice, however)
-				memset(&block[2], 0, (wsize - 2) * WordSize);
+				memset(&block[2], 0, (wallocSize - 2) * WordSize);
 				
 				TotalMemAllocs++;
-				TotalMemUsage += wsize * WordSize;
+				TotalMemUsage += wallocSize * WordSize;
 				
 				ExitCriticalSection();
 				return &block[2];
@@ -151,17 +112,16 @@ void* malloc(size_t size)
 	return NULL;
 }
 
-// Deallocates using an alternate heap algorithm
-void free(void* pointer)
+void HeapFree(Word* heap, UInt16 heapSize, void* pointer)
 {
-	Word *block = (Word *) pointer;  // This cast is not required in C, but C++ is retarded.
+	Word *block = (Word*) pointer;  // This cast is not required in C, but C++ is retarded.
 	block -= 2;
 	
 	EnterCriticalSection();
 	
 	// Update free word count
-	FreeWords += block[1] ? block[1] : HeapSize - (block - Heap);
-	TotalMemUsage = (HeapSize - FreeWords) * WordSize;
+	FreeWords += block[1] ? block[1] : heapSize - (block - heap);
+	TotalMemUsage = (heapSize - FreeWords) * WordSize;
 	
 	// Recombine a proceeding free region
 	if(block[1] && !((block + block[1])[0]))
@@ -201,4 +161,50 @@ void free(void* pointer)
 	TotalMemAllocs--;
 		
 	ExitCriticalSection();
+}
+
+// Reimplementation of standard C malloc and free
+
+void* malloc(size_t size)
+{
+	return HeapAlloc(MainHeap, HeapSize * sizeof(UInt16), size);
+}
+
+void free(void* pointer)
+{
+	HeapFree(MainHeap, HeapSize * sizeof(UInt16), pointer);
+}
+
+// Some safe-buffer routines for the IO manager and other debug purposes
+
+void* mallocSafe(size_t size)
+{
+	UInt16* ptr;
+	
+	if (size & 1) size++;
+	
+	ptr = malloc(size + 4);
+	ptr[0] = (UInt16)ptr;
+	ptr[(size >> 1) + 1] = ~(UInt16)ptr;
+	
+	return ptr + 1;
+}
+
+// Frees a buffer allocated using mallocSafe
+void freeSafe(void* ptr)
+{
+	free((UInt16*)ptr - 1);
+}
+
+// Checks a buffer for possible corruption
+//  true - check succeeded
+//  false - check failed, corruption likely
+Bool safeCheck(void* ptr, size_t size)
+{
+	UInt16* p = ptr;
+	if ((*(p - 1) != (UInt16)(p - 1)) || (*(p + size) != ~(UInt16)(p - 1)))
+	{
+		return false;
+	}
+	return true;
 }

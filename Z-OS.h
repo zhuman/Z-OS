@@ -6,6 +6,9 @@
 // See the individual files and the documentation for more
 // information on the API functions and their usage.
 
+#ifndef _Z_OS_MAIN_HEADER
+#define _Z_OS_MAIN_HEADER
+
 // First, some useful functions
 
 __inline static int Max(int x, int y)
@@ -62,3 +65,5 @@ __inline static int Sgn(int x)
 #include "Devices\File.h"
 #include "Devices\VirtualFile.h"
 #include "CacheManager.h"
+
+#endif

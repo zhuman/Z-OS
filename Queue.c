@@ -1,6 +1,6 @@
 #include "Z-OS.h"
 
-void QueueInterfaceCreate(InternalObject* obj)
+static void QueueInterfaceCreate(InternalObject* obj)
 {
 	QueueInternal* intObj = zmalloc(sizeof(QueueInternal));
 	if (intObj)
@@ -9,12 +9,12 @@ void QueueInterfaceCreate(InternalObject* obj)
 	}
 }
 
-void QueueInterfaceDestroy(InternalObject* obj)
+static void QueueInterfaceDestroy(InternalObject* obj)
 {
 	zfree(obj->Data);
 }
 
-Int16 QueueInterfaceAddItem(UInt16 handle, void* item)
+static Int16 QueueInterfaceAddItem(UInt16 handle, void* item)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -34,7 +34,7 @@ Int16 QueueInterfaceAddItem(UInt16 handle, void* item)
 	
 }
 
-Int16 QueueInterfacePeek(UInt16 handle, void** item)
+static Int16 QueueInterfacePeek(UInt16 handle, void** item)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -58,7 +58,7 @@ Int16 QueueInterfacePeek(UInt16 handle, void** item)
 	}
 }
 
-Int16 QueueInterfaceGetItem(UInt16 handle, void** item)
+static Int16 QueueInterfaceGetItem(UInt16 handle, void** item)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -82,7 +82,7 @@ Int16 QueueInterfaceGetItem(UInt16 handle, void** item)
 	}
 }
 
-Int16 QueueInterfaceStartWait(UInt16 handle)
+static Int16 QueueInterfaceStartWait(UInt16 handle)
 {
 	InternalObject* obj;
 	Int16 ret;
@@ -104,7 +104,7 @@ Int16 QueueInterfaceStartWait(UInt16 handle)
 	}
 }
 
-Int16 QueueGetInterface(Int16 code, void** interface)
+static Int16 QueueGetInterface(Int16 code, void** interface)
 {
 	switch (code)
 	{

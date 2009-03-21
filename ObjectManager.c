@@ -16,7 +16,7 @@ List OpenHandles = {0};
 // interface for the object with the specified index (not handle).
 // This is used to call the IGeneric.Destroy function since the handle
 // has already been destroyed by that point.
-Int16 GetInterfaceInternal(UInt16 index, UInt16 code, void** interface)
+static Int16 GetInterfaceInternal(UInt16 index, UInt16 code, void** interface)
 {
 	UInt16 i = 0;
 	InternalObject* obj;
@@ -313,11 +313,11 @@ Int16 IsHandleValid(UInt16 handle)
 	return True;
 }
 
-void zstrcpy(char* dest, char* src)
+/*static void zstrcpy(char* dest, char* src)
 {
 	Int8 i = 0;
 	while ((dest[i] = src[i])) i++;
-}
+}*/
 
 Int16 CreateSymbolicLink(char* name, InternalObject* pointedObj)
 {
