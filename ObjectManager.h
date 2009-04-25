@@ -80,7 +80,8 @@ typedef enum
 	CodeIDevice,
 	CodeISimpleIO,
 	CodeIFile,
-	CodeIDirectory
+	CodeIDirectory,
+	CodeIDMA
 } InterfaceCodeEnum;
 
 // Non-standard interfaces should have codes
@@ -95,6 +96,7 @@ typedef enum
 	TypeEvent,
 	TypeQueue,
 	TypeDelegate,
+	TypeDMA
 } TypeCodeEnum;
 
 // Non-standard types are generated starting at 0x100

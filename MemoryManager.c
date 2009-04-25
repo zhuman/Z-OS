@@ -163,6 +163,22 @@ void HeapFree(Word* heap, UInt16 heapSize, void* pointer)
 	ExitCriticalSection();
 }
 
+// Returns the size of an allocated buffer
+UInt16 HeapAllocSize(Word* heap, UInt16 heapSize, void* alloc)
+{
+	Word* pointer = alloc;
+	Word index = pointer - heap;
+	Word next = heap[index - 1];
+	if (next)
+	{
+		return next * sizeof(Word);
+	}
+	else
+	{
+		return heapSize - index * sizeof(Word);
+	}
+}
+
 // Reimplementation of standard C malloc and free
 
 void* malloc(size_t size)

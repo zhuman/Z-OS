@@ -44,8 +44,8 @@ file_004=no
 [FILE_INFO]
 file_000=Startup.c
 file_001=..\Z-OS.a
-file_002=C:\Documents and Settings\Owner\Desktop\SDCard\SD Card.a
-file_003=C:\Documents and Settings\Owner\Desktop\NewFAT\NewFAT.a
+file_002=C:\Documents and Settings\Owner\Desktop\SDDriver\SD Card.a
+file_003=C:\Documents and Settings\Owner\Desktop\FATDriver\NewFAT.a
 file_004=C:\Documents and Settings\Owner\Desktop\Z-OS\p24HJ256GP610.gld
 [SUITE_INFO]
 suite_guid={479DDE59-4D56-455E-855E-FFF59A3DB57E}

@@ -3,24 +3,34 @@
 
 typedef enum
 {
-	Byte,
-	Word
+	DMAByte,
+	DMAWord
 } DMASize;
 
 typedef enum
 {
-	Force			= 0b00000001,
-	NullDataWrite	= 0b00000010,
+	DMAForce			= 0b00000001,
+	DMANullDataWrite	= 0b00000010
 } DMAFlags;
+
+typedef enum
+{
+	DMAAsynchronous,
+	DMAPingPong,
+	DMAOneShot,
+} DMAMode;
 
 typedef struct
 {
 	Int16 (*SetSize)(UInt16 handle, DMASize size);
 	Int16 (*GetSize)(UInt16 handle, DMASize* size);
-	Int16 (*SetDevice)(UInt16 handle, UInt16 device);
-	Int16 (*GetDevice)(UInt16 handle, UInt16* device);
+	Int16 (*SetDevice)(UInt16 handle, UInt16* device);
+	Int16 (*GetDevice)(UInt16 handle, UInt16** device);
 	Int16 (*SetFlags)(UInt16 handle, DMAFlags flags);
 	Int16 (*GetFlags)(UInt16 handle, DMAFlags* flags);
+	Int16 (*SetMode)(UInt16 handle, Bool pingPong, Bool continuous);
+	Int16 (*GetMode)(UInt16 handle, Bool* pingPong, Bool* continuous);
+	Int16 (*CancelTransfer)(UInt16 handle);
 } IDMA;
 
 typedef struct
@@ -75,26 +85,18 @@ typedef struct
 
 typedef struct
 {
-	UInt16 Length;
-	Bool Receive;
-	void* DMABuffer;
-	void* UserBuffer;
-} TransmitQueueItem;
-
-typedef struct
-{
+	Bool InUse;
 	UInt8 Channel;
 	
-	// DMA configuration
+	// DMA Registers
 	DMAxCON* ConBits;
 	DMAxREQ* ReqBits;
 	UInt16* PeriphAddr;
 	void** StartAddr;
 	UInt16* BufLen;
 	
-	List TransmitQueue;
+	UInt8* CurrentBuffer;
 	
-	Bool IsTransmitting;
 } DMAInternal;
 
 void InitDMA(void);
