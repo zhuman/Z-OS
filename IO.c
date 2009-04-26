@@ -6,7 +6,7 @@
 
 List Devices = {0};
 List FileSystems = {0};
-
+List Partitions = {0};
 List CurrentFiles = {0};
 
 Int16 TypeDevice;
@@ -44,7 +44,12 @@ static Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path
 		
 		EnterCriticalSection();
 		
-		// TODO: Check if this partition has been mounted before now
+		// Check if this partition has been mounted before now
+		if (dev->IsMounted)
+		{
+			ExitCriticalSection();
+			return ErrorInUse;
+		}
 		
 		// Create a partition object for this partition
 		if ((ret = CreateObject(TypePartition,&partHandle,path)))
@@ -74,6 +79,8 @@ static Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path
 			puts("Error retrieving internal part object data\r\n");
 			return ret;
 		}
+		
+		AddListItem(&Partitions,part);
 		partObj->Data = part;
 		partObj->Flags |= ObjectFlagPermanent;	
 		ReleaseObject(partHandle);
@@ -91,6 +98,7 @@ static Int16 DeviceMount(UInt16 handle, UInt16 partition, char* hint, char* path
 		{
 			PartitionTableEntry* entry = EntryFromPartitionIndex(partTable,partition);
 			puts("Device is partitioned!\r\n");
+			
 			// Create a partition object based on the partition table
 			if (GetNumPartitions(partTable) > partition && entry)
 			{
@@ -179,15 +187,28 @@ static Int16 DeviceUnmount(UInt16 handle,UInt16 partition)
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
 	if (obj)
 	{
+		UInt16 i;
+		PartInternal* part = NULL;
+		
 		EnterCriticalSection();
-		if (((DeviceInternal*)(obj->Data))->IsMounted)
+		DeviceInternal* dev = obj->Data;
+		
+		for (i = 0; i < Partitions.Length; i++)
+		{
+			part = GetListItem(&Partitions,i);
+			if (part->Device == dev && part->Index == partition) break;
+			else part = NULL;
+		}
+		if (!part) return ErrorUnmounted;
+		
+		if (dev->IsMounted)
 		{
 			// TODO: Call with the proper partition object
-			//ret = ((DeviceInternal*)(obj->Data))->MountedFS->Funcs.UnmountDevice((DeviceInternal*)(obj->Data),partition,False);
+			ret = part->FileSystem->Funcs.UnmountDevice(part,False);
 			if (ret == ErrorSuccess)
 			{
-				((DeviceInternal*)(obj->Data))->IsMounted = False;
-				//((DeviceInternal*)(obj->Data))->MountedFS = Null;
+				part->IsLive = False;
+				part->FileSystem = Null;
 			}
 			// If it failed, just return to the user?
 			ExitCriticalSection();

@@ -404,7 +404,7 @@ static Int16 ThreadInterfaceStop(UInt16 handle)
 		EnterCriticalSection();
 		thr->State = Stopped;
 		DequeueThread(thr);
-		FinishWait(thr,null);
+		FinishWait(thr, NULL);
 		if (CurrentThread == thr)
 		{
 			YieldThread();
@@ -691,7 +691,7 @@ void ThreadProc(ThreadStartParams* params)
 		DequeueThread(CurrentThread);
 		
 		// Join any threads waiting on this thread
-		FinishWait(CurrentThread,null);
+		FinishWait(CurrentThread, NULL);
 		
 		// If no other threads are running, reset the system
 		if (!NumRunningThreads)

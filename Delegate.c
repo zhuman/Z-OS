@@ -244,7 +244,7 @@ static void WorkerThreadProc(void* arg)
 		item->DelegateObj->RemainingAsync--;
 		if (!(item->DelegateObj->RemainingAsync))
 		{
-			FinishWait(item->DelegateObj,null);
+			FinishWait(item->DelegateObj, NULL);
 		}
 		ExitCriticalSection();
 		zfree(item);

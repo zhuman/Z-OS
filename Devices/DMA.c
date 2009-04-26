@@ -2,7 +2,7 @@
 #include "DMA.h"
 
 // DMA memory is layed out as a heap
-#define DMAHeapSize 0x2000
+#define DMAHeapSize 0x200
 UInt8 __attribute__ ((space(dma))) DMAHeap[DMAHeapSize] = {0};
 
 List DMAObjects = {0};
@@ -39,7 +39,7 @@ static void DMADestroy(InternalObject* obj)
 {
 	if (!obj) return;
 	if (!obj->Data) return;
-	obj->Data = null;
+	obj->Data = NULL;
 }
 
 static Int16 DMASetFlags(UInt16 handle, DMAFlags flags)
@@ -120,16 +120,20 @@ static Int16 DMAGetSize(UInt16 handle, DMASize* size)
 	}
 }
 
-static Int16 DMASetDevice(UInt16 handle, UInt16* device)
+static Int16 DMASetDevice(UInt16 handle, UInt16* device, UInt8 requestIrq)
 {
 	InternalObject* obj;
 	Int16 ret;
+	
+	if (!device) return ErrorNullArg;
+	
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
 	if (obj)
 	{
 		DMAInternal* dma = obj->Data;
 		
-		dma->PeriphAddr = device;
+		*(dma->PeriphAddr) = (UInt16)device;
+		dma->ReqBits->IRQSEL = 0b01111111 & requestIrq;
 		
 		return ErrorSuccess;
 	}
@@ -139,16 +143,18 @@ static Int16 DMASetDevice(UInt16 handle, UInt16* device)
 	}
 }
 
-static Int16 DMAGetDevice(UInt16 handle, UInt16** device)
+static Int16 DMAGetDevice(UInt16 handle, UInt16** device, UInt8* requestIrq)
 {
 	InternalObject* obj;
 	Int16 ret;
+	
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
 	if (obj)
 	{
 		DMAInternal* dma = obj->Data;
 		
-		*device = dma->PeriphAddr;
+		*device = (UInt16*)*(dma->PeriphAddr);
+		*requestIrq = (UInt8)(dma->ReqBits->IRQSEL);
 		
 		return ErrorSuccess;
 	}
@@ -210,7 +216,7 @@ static Int16 DMACancelTransfer(UInt16 handle)
 		dma->ConBits->CHEN = 0;
 		
 		// Allow threads that are waiting on this channel to finish the wait
-		FinishWait(dma,null);
+		FinishWait(dma, NULL);
 		
 		return ErrorSuccess;
 	}
@@ -397,6 +403,7 @@ void InitDMA(void)
 	TypeRegistration dma = {0};
 	dma.Type = TypeDMA;
 	dma.GetInterface = DMAGetInterface;
+	RegisterTypeManager(dma);
 	
 	// Init the DMA-enabled memory heap
 	HeapInit(DMAHeap, DMAHeapSize);
@@ -405,8 +412,9 @@ void InitDMA(void)
 	for (i = 0; i < 8; i++)
 	{
 		DMAInternal* dma = zmalloc(sizeof(DMAInternal));
-		AddListItem(&DMAObjects,dma);
+		if (!dma) return;
 		
+		AddListItem(&DMAObjects,dma);
 		dma->Channel = i;
 		switch (i)
 		{
@@ -442,11 +450,43 @@ void InitDMA(void)
 
 static void RunDMAxInterrupt(UInt8 channel)
 {
-	FinishWait(GetListItem(&DMAObjects,channel),null);
+	FinishWait(GetListItem(&DMAObjects,channel), NULL);
+	
+	// Disable the interrupt flag
+	switch (channel)
+	{
+	case 0:
+		IFS0bits.DMA0IF = 0;
+		break;
+	case 1:
+		IFS0bits.DMA1IF = 0;
+		break;
+	case 2:
+		IFS1bits.DMA2IF = 0;
+		break;
+	case 3:
+		IFS2bits.DMA3IF = 0;
+		break;
+	case 4:
+		IFS2bits.DMA4IF = 0;
+		break;
+	case 5:
+		IFS3bits.DMA5IF = 0;
+		break;
+	case 6:
+		IFS4bits.DMA6IF = 0;
+		break;
+	case 7:
+		IFS4bits.DMA7IF = 0;
+		break;
+	}
 }
 
-#define DefineDMAInterrupt(x) \
-void __attribute__((__interrupt__, no_auto_psv)) _DMA##x##Interrupt(void){RunDMAxInterrupt(x);}
+#define DefineDMAInterrupt(x)												\
+void __attribute__((__interrupt__, no_auto_psv)) _DMA##x##Interrupt(void)	\
+{																			\
+	RunDMAxInterrupt(x);													\
+}
 
 DefineDMAInterrupt(0)
 DefineDMAInterrupt(1)

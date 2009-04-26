@@ -15,7 +15,7 @@ size_t FreeWords = HeapSize;
 
 void HeapInit(void* heap, size_t size)
 {
-	memset(MainHeap,0,size);
+	memset(heap,0,size);
 }
 
 void* HeapAlloc(Word* heap, UInt16 heapSize, size_t allocSize)

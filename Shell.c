@@ -106,12 +106,12 @@ void InitShell(void)
 	UInt16 shellThread;
 	Int16 ret;
 	IThread* shellInt;
-	if ((ret = CreateObject(TypeThread,&shellThread,null))) return;
-	if ((ret = GetInterface(shellThread,CodeIThread,(void**)&shellInt)))
+	if ((ret = CreateObject(TypeThread, &shellThread, NULL))) return;
+	if ((ret = GetInterface(shellThread, CodeIThread, (void**)&shellInt)))
 	{
 		ReleaseObject(shellThread);
 		return;
 	}
-	ret = shellInt->Start(shellThread,ShellThreadProc,null);
+	ret = shellInt->Start(shellThread, ShellThreadProc, NULL);
 	ReleaseObject(shellThread);
 }

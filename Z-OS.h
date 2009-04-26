@@ -64,6 +64,7 @@ __inline static int Sgn(int x)
 #include "Devices\Partition.h"
 #include "Devices\File.h"
 #include "Devices\VirtualFile.h"
+#include "Devices\DMA.h"
 #include "CacheManager.h"
 
 #endif

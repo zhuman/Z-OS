@@ -55,7 +55,6 @@ typedef struct
 typedef struct
 {
 	Int16 DeviceId; // Unique device ID
-	UInt16 Partition;
 	DeviceInfo Info; // Information about the device
 	DeviceFuncs Funcs; // Functions implemented by the driver
 	Bool IsMounted;

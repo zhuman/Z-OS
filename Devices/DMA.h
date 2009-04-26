@@ -24,8 +24,8 @@ typedef struct
 {
 	Int16 (*SetSize)(UInt16 handle, DMASize size);
 	Int16 (*GetSize)(UInt16 handle, DMASize* size);
-	Int16 (*SetDevice)(UInt16 handle, UInt16* device);
-	Int16 (*GetDevice)(UInt16 handle, UInt16** device);
+	Int16 (*SetDevice)(UInt16 handle, UInt16* device, UInt8 requestIrq);
+	Int16 (*GetDevice)(UInt16 handle, UInt16** device, UInt8* requestIrq);
 	Int16 (*SetFlags)(UInt16 handle, DMAFlags flags);
 	Int16 (*GetFlags)(UInt16 handle, DMAFlags* flags);
 	Int16 (*SetMode)(UInt16 handle, Bool pingPong, Bool continuous);

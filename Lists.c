@@ -110,7 +110,7 @@ void InsertListItem(List* list, UInt16 index, void* newItem)
 
 void* ReplaceListItem(List* list, UInt16 index, void* newItem)
 {
-	void* oldItem = null;
+	void* oldItem = NULL;
 	ListItem* intItem = GetListItemInternal(list,index);
 	if (intItem)
 	{

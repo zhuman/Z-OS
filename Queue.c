@@ -23,7 +23,7 @@ static Int16 QueueInterfaceAddItem(UInt16 handle, void* item)
 	{
 		EnterCriticalSection();
 		AddListItem(&(((QueueInternal*)(obj->Data))->Items), item);
-		FinishWait(obj->Data,null);
+		FinishWait(obj->Data, NULL);
 		ExitCriticalSection();
 		return ErrorSuccess;
 	}
