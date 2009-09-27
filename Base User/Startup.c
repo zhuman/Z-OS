@@ -42,6 +42,7 @@ void TestSDMount(void)
 	IDevice* sdDev;
 	ISimpleIO* serIo;
 	ISimpleIO* fsIo;
+	IFile* fsFile;
 	UInt8* buffer = zmalloc(512);
 	
 	if (!buffer)
@@ -76,6 +77,16 @@ void TestSDMount(void)
 	if ((ret = OpenObject("SDPart1\\TEST.TXT",&fsHandle)))
 	{
 		printf("Error at OpenObject(file): 0x%x\r\n",ret);
+		return;
+	}
+	if ((ret = GetInterface(fsHandle,CodeIFile,(void**)&fsFile)))
+	{
+		printf("Error on GetInterface(file): 0x%x\r\n",ret);
+		return;
+	}
+	if ((ret = fsFile->Open(fsHandle,Read)))
+	{
+		printf("Error on Open(file): 0x%x\r\n",ret);
 		return;
 	}
 	if ((ret = GetInterface(fsHandle,CodeISimpleIO,(void**)&fsIo)))
