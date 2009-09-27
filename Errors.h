@@ -15,6 +15,7 @@
 #define ErrorInvalidArg			0x8
 #define ErrorUnimplemented		0x9
 #define ErrorInternal			0xA
+#define ErrorOutOfBounds		0xB
 
 // Object Manager Errors
 #define ErrorInvalidHandle		0x101

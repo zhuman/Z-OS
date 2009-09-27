@@ -173,8 +173,8 @@ void IdleThread(void)
 {
 	for(;;)
 	{
-		puts("Idle\r\n");
-		__asm__ volatile ("PWRSAV #1");
+		//puts("Idle\r\n");
+		//__asm__ volatile ("PWRSAV #1");
 	}
 }
 

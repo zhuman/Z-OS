@@ -19,6 +19,136 @@ static void FreeDMA(void* pointer)
 	HeapFree((UInt16*)DMAHeap,DMAHeapSize,pointer);
 }
 
+// Sets the value DMA interrupt flag for the indexed DMA channel
+static inline void SetDMAIF(UInt16 index, Bool value)
+{
+	switch (index)
+	{
+	case 0:
+		IFS0bits.DMA0IF = !!value;
+		break;
+	case 1:
+		IFS0bits.DMA1IF = !!value;
+		break;
+	case 2:
+		IFS1bits.DMA2IF = !!value;
+		break;
+	case 3:
+		IFS2bits.DMA3IF = !!value;
+		break;
+	case 4:
+		IFS2bits.DMA4IF = !!value;
+		break;
+	case 5:
+		IFS3bits.DMA5IF = !!value;
+		break;
+	case 6:
+		IFS4bits.DMA6IF = !!value;
+		break;
+	case 7:
+		IFS4bits.DMA7IF = !!value;
+		break;
+	}
+}
+
+// Returns the value of a DMA interrupt flag for the indexed DMA channel
+static inline Bool GetDMAIF(UInt16 index)
+{
+	switch (index)
+	{
+	case 0:
+		return IFS0bits.DMA0IF;
+		break;
+	case 1:
+		return IFS0bits.DMA1IF;
+		break;
+	case 2:
+		return IFS1bits.DMA2IF;
+		break;
+	case 3:
+		return IFS2bits.DMA3IF;
+		break;
+	case 4:
+		return IFS2bits.DMA4IF;
+		break;
+	case 5:
+		return IFS3bits.DMA5IF;
+		break;
+	case 6:
+		return IFS4bits.DMA6IF;
+		break;
+	case 7:
+		return IFS4bits.DMA7IF;
+		break;
+	}
+}
+
+// Sets the value DMA interrupt flag for the indexed DMA channel
+static inline void SetDMAIE(UInt16 index, Bool value)
+{
+	switch (index)
+	{
+	case 0:
+		IEC0bits.DMA0IE = !!value;
+		break;
+	case 1:
+		IEC0bits.DMA1IE = !!value;
+		break;
+	case 2:
+		IEC1bits.DMA2IE = !!value;
+		break;
+	case 3:
+		IEC2bits.DMA3IE = !!value;
+		break;
+	case 4:
+		IEC2bits.DMA4IE = !!value;
+		break;
+	case 5:
+		IEC3bits.DMA5IE = !!value;
+		break;
+	case 6:
+		IEC4bits.DMA6IE = !!value;
+		break;
+	case 7:
+		IEC4bits.DMA7IE = !!value;
+		break;
+	}
+}
+
+// Returns the value of a DMA interrupt flag for the indexed DMA channel
+static inline Bool GetDMAIE(UInt16 index)
+{
+	switch (index)
+	{
+	case 0:
+		return IEC0bits.DMA0IE;
+		break;
+	case 1:
+		return IEC0bits.DMA1IE;
+		break;
+	case 2:
+		return IEC1bits.DMA2IE;
+		break;
+	case 3:
+		return IEC2bits.DMA3IE;
+		break;
+	case 4:
+		return IEC2bits.DMA4IE;
+		break;
+	case 5:
+		return IEC3bits.DMA5IE;
+		break;
+	case 6:
+		return IEC4bits.DMA6IE;
+		break;
+	case 7:
+		return IEC4bits.DMA7IE;
+		break;
+	default:
+		return 0;
+	}
+}
+
 static void DMACreate(InternalObject* obj)
 {
 	UInt16 i;
@@ -30,6 +160,7 @@ static void DMACreate(InternalObject* obj)
 		if (!dma->InUse)
 		{
 			obj->Data = dma;
+			dma->InUse = true;
 			return;
 		}
 	}
@@ -37,8 +168,11 @@ static void DMACreate(InternalObject* obj)
 
 static void DMADestroy(InternalObject* obj)
 {
+	DMAInternal* dma;
 	if (!obj) return;
 	if (!obj->Data) return;
+	dma = obj->Data;
+	dma->InUse = false;
 	obj->Data = NULL;
 }
 
@@ -53,6 +187,7 @@ static Int16 DMASetFlags(UInt16 handle, DMAFlags flags)
 		
 		dma->ConBits->NULLW = !!(flags & DMANullDataWrite);
 		dma->ReqBits->FORCE = !!(flags & DMAForce);
+		SetDMAIE(dma->Channel, !(flags & DMANoInterrupt));
 		
 		return ErrorSuccess;
 	}
@@ -72,7 +207,8 @@ static Int16 DMAGetFlags(UInt16 handle, DMAFlags* flags)
 		DMAInternal* dma = obj->Data;
 		
 		*flags = 	(dma->ConBits->NULLW ? DMANullDataWrite : 0) | 
-					(dma->ReqBits->FORCE ? DMAForce : 0);
+					(dma->ReqBits->FORCE ? DMAForce : 0) |
+					(GetDMAIE(dma->Channel) ? 0 : DMANoInterrupt);
 		
 		return ErrorSuccess;
 	}
@@ -173,7 +309,7 @@ static Int16 DMASetMode(UInt16 handle, Bool pingPong, Bool continuous)
 	{
 		DMAInternal* dma = obj->Data;
 		
-		dma->ConBits->MODE = (pingPong ? 0b01 : 0) | (continuous ? 0b01 : 0);
+		dma->ConBits->MODE = (pingPong ? 0b10 : 0) | (!continuous ? 0b01 : 0);
 		
 		return ErrorSuccess;
 	}
@@ -233,6 +369,11 @@ static Int16 DMAStartWait(UInt16 handle)
 	if ((ret = InternalObjectFromHandle(handle,&obj))) return ret;
 	if (obj)
 	{
+		DMAInternal* dma = obj->Data;
+		if (!(dma->ConBits->CHEN))
+		{
+			return ErrorNoWait;
+		}
 		return ErrorSuccess;
 	}
 	else
@@ -241,40 +382,68 @@ static Int16 DMAStartWait(UInt16 handle)
 	}
 }
 
-static Int16 DMATransfer(DMAInternal* dma, UInt16 direction, UInt8* buffer, UInt16 bufLen)
+static Int16 DMATransfer(UInt16 handle, DMAInternal* dma, UInt16 direction, UInt8* buffer, UInt16 bufLen)
 {
+	Bool bufferExisted = true;
+	
 	// Disable the channel
 	dma->ConBits->CHEN = 0;
 	
 	// Make sure a buffer exists in DMA memory
 	if (dma->CurrentBuffer)
 	{
-		if (bufLen != *(dma->BufLen))
+		if (bufLen != dma->CurrentBufferLen)
 		{
+			bufferExisted = false;
 			FreeDMA(dma->CurrentBuffer);
 			dma->CurrentBuffer = AllocDMA(bufLen);
+			dma->CurrentBufferLen = bufLen;
 			if (!dma->CurrentBuffer) return ErrorOutOfMemory;
 		}
 	}
 	else
 	{
+		bufferExisted = false;
+		
 		// Allocate a buffer in DMA memory
 		dma->CurrentBuffer = AllocDMA(bufLen);
+		dma->CurrentBufferLen = bufLen;
 		if (!dma->CurrentBuffer) return ErrorOutOfMemory;
 	}
-	
-	// Copy over the data to the DMA buffer
-	memcpy(dma->CurrentBuffer,buffer,bufLen);
-	*(dma->StartAddr) = dma->CurrentBuffer;
-	*(dma->BufLen) = bufLen;
 	
 	// Transfer direction
 	dma->ConBits->DIR = direction;
 	
-	// DMA channel enable
-	dma->ConBits->CHEN = 1;
+	// Set up the DMA buffer
+	*(dma->StartAddrA) = (void*)((int)dma->CurrentBuffer - 4000);
+	*(dma->BufLen) = bufLen; //(dma->ConBits->SIZE) ? bufLen : (bufLen >> 1);
 	
-	return ErrorSuccess;
+	// If writing...
+	if (direction)
+	{
+		// Copy over the data to the DMA buffer
+		memcpy(dma->CurrentBuffer, buffer, bufLen);
+		
+		// DMA channel enable
+		SetDMAIF(dma->Channel,0);
+		dma->ConBits->CHEN = 1;
+		
+		return ErrorSuccess;
+	}
+	// If reading...
+	else
+	{
+		// DMA channel enable
+		SetDMAIF(dma->Channel, 0);
+		dma->ConBits->CHEN = 1;
+		
+		WaitForObject(handle);
+		
+		// Copy over the data to the user buffer
+		memcpy(buffer, dma->CurrentBuffer, bufLen);
+		
+		return ErrorSuccess;
+	}
 }
 
 static Int16 DMARead(UInt16 handle, UInt8* buffer, UInt16 bufLen)
@@ -286,7 +455,7 @@ static Int16 DMARead(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 	{
 		DMAInternal* dma = obj->Data;
 		
-		return DMATransfer(dma,0,buffer,bufLen);
+		return DMATransfer(handle, dma, 0, buffer, bufLen);
 	}
 	else
 	{
@@ -308,7 +477,7 @@ static Int16 DMAWrite(UInt16 handle, UInt8* buffer, UInt16 bufLen)
 	{
 		DMAInternal* dma = obj->Data;
 		
-		return DMATransfer(dma,1,buffer,bufLen);
+		return DMATransfer(handle, dma, 1, buffer, bufLen);
 	}
 	else
 	{
@@ -391,7 +560,8 @@ static Int16 DMAGetInterface(UInt16 code, void** interface)
 	dma->ConBits = (DMAxCON*)&DMA##x##CON;	\
 	dma->ReqBits = (DMAxREQ*)&DMA##x##REQ;	\
 	dma->PeriphAddr = (UInt16*)&DMA##x##PAD;\
-	dma->StartAddr = (void**)&DMA##x##STA;	\
+	dma->StartAddrA = (void**)&DMA##x##STA;	\
+	dma->StartAddrB = (void**)&DMA##x##STB;	\
 	dma->BufLen = (UInt16*)&DMA##x##CNT;	\
 } while (0)
 
@@ -448,42 +618,19 @@ void InitDMA(void)
 
 // All of the DMA interrupts are defined to run a common function
 
-static void RunDMAxInterrupt(UInt8 channel)
+static inline void RunDMAxInterrupt(UInt8 channel)
 {
-	FinishWait(GetListItem(&DMAObjects,channel), NULL);
+	DMAInternal* dma = GetListItem(&DMAObjects,channel);
+	FinishWait(dma, NULL);
+	putchar('C');
+	printf("DMA completed: %d\r\n", (UInt16)channel);
 	
 	// Disable the interrupt flag
-	switch (channel)
-	{
-	case 0:
-		IFS0bits.DMA0IF = 0;
-		break;
-	case 1:
-		IFS0bits.DMA1IF = 0;
-		break;
-	case 2:
-		IFS1bits.DMA2IF = 0;
-		break;
-	case 3:
-		IFS2bits.DMA3IF = 0;
-		break;
-	case 4:
-		IFS2bits.DMA4IF = 0;
-		break;
-	case 5:
-		IFS3bits.DMA5IF = 0;
-		break;
-	case 6:
-		IFS4bits.DMA6IF = 0;
-		break;
-	case 7:
-		IFS4bits.DMA7IF = 0;
-		break;
-	}
+	SetDMAIF(channel, 0);
 }
 
 #define DefineDMAInterrupt(x)												\
-void __attribute__((__interrupt__, no_auto_psv)) _DMA##x##Interrupt(void)	\
+void __attribute__((interrupt, auto_psv)) _DMA##x##Interrupt(void)			\
 {																			\
 	RunDMAxInterrupt(x);													\
 }

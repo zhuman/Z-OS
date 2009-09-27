@@ -10,15 +10,9 @@ typedef enum
 typedef enum
 {
 	DMAForce			= 0b00000001,
-	DMANullDataWrite	= 0b00000010
+	DMANullDataWrite	= 0b00000010,
+	DMANoInterrupt		= 0b00000100
 } DMAFlags;
-
-typedef enum
-{
-	DMAAsynchronous,
-	DMAPingPong,
-	DMAOneShot,
-} DMAMode;
 
 typedef struct
 {
@@ -92,10 +86,12 @@ typedef struct
 	DMAxCON* ConBits;
 	DMAxREQ* ReqBits;
 	UInt16* PeriphAddr;
-	void** StartAddr;
+	void** StartAddrA;
+	void** StartAddrB;
 	UInt16* BufLen;
 	
 	UInt8* CurrentBuffer;
+	UInt16 CurrentBufferLen;
 	
 } DMAInternal;
 

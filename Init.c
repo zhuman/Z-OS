@@ -12,6 +12,19 @@ UInt16 __attribute__ ((persistent)) BootNum;
 int BootOS(void)
 {
 	Int16 ret;
+
+/**	ICD2 part -- enable PLL
+//	This is already done by the bootloader if not debugging with the ICD.
+#define PLL_MUL		30
+#define PLL_DIV1	0
+#define PLL_DIV2	0
+	CLKDIVbits.PLLPRE = PLL_DIV1;
+	CLKDIVbits.PLLPOST = PLL_DIV2;
+	PLLFBD = PLL_MUL;
+	RCONbits.SWDTEN=0;            // Disable Watch Dog Timer
+	while(OSCCONbits.LOCK!=1) {}; // Wait for PLL to lock
+//***/
+	
 	AD1PCFGH = AD1PCFGL = AD2PCFGL = 0xFFFF;  // A/D pins ALL DIGITAL
 	
 	// Initialize INT1 as the "program" button
