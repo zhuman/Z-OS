@@ -1,3 +1,6 @@
 [submodule "File Systems/FAT"]
 	path = File Systems/FAT
 	url = https://github.com/zhuman/FATDriver.git
+[submodule "Devices/SD"]
+	path = Devices/SD
+	url = https://github.com/zhuman/SDDriver.git
